@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EV vs ICE Calculator — Short Specs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f5f6f8;
+  --bg-card: #ffffff;
+  --bg-elevated: #eef0f3;
+  --border: #e2e5ea;
+  --border-strong: #cdd2d9;
+  --text: #15171a;
+  --text-dim: #5b6068;
+  --text-faint: #8a8f97;
+
+  --banner-bg: #1f2228;
+  --banner-text: #ffffff;
+  --banner-text-dim: #a8adb5;
+  --banner-border: #2a2e35;
+
+  --ev: #007AFF;
+  --ev-soft: #e6f1ff;
+  --ev-dark: #0056b3;
+  --ice: #ff7849;
+  --ice-soft: #fff0e9;
+  --ice-dark: #d85a30;
+
+  --success-bg: #e6f1ff;
+  --warning-bg: #fff0e9;
+
+  --shadow: 0 1px 2px rgba(20,23,28,0.04), 0 1px 3px rgba(20,23,28,0.06);
+  --shadow-md: 0 2px 4px rgba(20,23,28,0.05), 0 4px 12px rgba(20,23,28,0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1114;
+    --bg-soft: #15181c;
+    --bg-card: #1a1d22;
+    --bg-elevated: #232730;
+    --border: #2a2f37;
+    --border-strong: #3a4049;
+    --text: #ebedf0;
+    --text-dim: #9ba0a8;
+    --text-faint: #6b7079;
+
+    --banner-bg: #0a0c10;
+    --banner-text: #ffffff;
+    --banner-text-dim: #9ba0a8;
+    --banner-border: #1a1d22;
+
+    --ev: #4a9eff;
+    --ev-soft: rgba(74,158,255,0.12);
+    --ev-dark: #79b8ff;
+    --ice: #ff8c5e;
+    --ice-soft: rgba(255,140,94,0.12);
+    --ice-dark: #ffa07a;
+
+    --success-bg: rgba(74,158,255,0.12);
+    --warning-bg: rgba(255,140,94,0.10);
+
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg-soft);
+  color: var(--text);
+  font-family: 'Prompt', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 400;
+}
+
+/* HEADER BANNER — full-width grey */
+.banner {
+  background: var(--banner-bg);
+  border-bottom: 1px solid var(--banner-border);
+  padding: 14px 0;
+  margin-bottom: 24px;
+}
+.banner-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.banner-left { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+
+/* Logo: SHORT regular white + SPECS semibold blue */
+.logo {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: 'Prompt', sans-serif;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  user-select: none;
+  white-space: nowrap;
+}
+.logo-short { font-weight: 400; color: var(--banner-text); }
+.logo-specs { font-weight: 600; color: var(--ev); }
+
+.banner-divider {
+  width: 1px;
+  height: 26px;
+  background: var(--banner-border);
+}
+.banner-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--banner-text);
+  letter-spacing: -0.005em;
+}
+.banner-title .tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ev);
+  background: rgba(74,158,255,0.18);
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-left: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+.banner-sub {
+  font-size: 12px;
+  color: var(--banner-text-dim);
+  font-weight: 300;
+  margin-top: 2px;
+}
+
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px 40px;
+}
+
+/* Main 2-column layout */
+.main {
+  display: grid;
+  grid-template-columns: minmax(520px, 600px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .main { grid-template-columns: minmax(460px, 540px) 1fr; }
+}
+@media (max-width: 980px) {
+  .main { grid-template-columns: 1fr; }
+}
+
+/* LEFT — controls */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.section-title.ev { color: var(--ev); }
+.section-title.ice { color: var(--ice-dark); }
+@media (prefers-color-scheme: dark) {
+  .section-title.ice { color: var(--ice); }
+}
+.section-title::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.section-title.no-dot::before { display: none; }
+
+/* Mode buttons */
+.mode-buttons {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-elevated);
+  padding: 3px;
+  border-radius: 8px;
+}
+.mode-btn {
+  flex: 1;
+  padding: 7px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mode-btn:hover { color: var(--text); }
+.mode-btn.active {
+  background: var(--bg-card);
+  color: var(--ev);
+  box-shadow: var(--shadow);
+}
+
+/* Two cards side by side */
+.dual-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.car-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+.field { margin-bottom: 10px; }
+.field:last-child { margin-bottom: 0; }
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+  gap: 4px;
+}
+.field-name {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.3;
+  font-weight: 400;
+}
+.field-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.field-hint {
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-top: 2px;
+  line-height: 1.4;
+  font-weight: 300;
+}
+
+/* Slider — base */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px; height: 14px;
+  background: var(--text);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 0 0 1px var(--border-strong);
+  transition: transform 0.1s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  background: var(--text);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+
+/* EV card — all sliders blue */
+.ev-card input[type="range"]::-webkit-slider-thumb {
+  background: var(--ev);
+  box-shadow: 0 0 0 1px var(--ev);
+}
+.ev-card input[type="range"]::-moz-range-thumb {
+  background: var(--ev);
+  box-shadow: 0 0 0 1px var(--ev);
+}
+
+/* ICE card — all sliders orange */
+.ice-card input[type="range"]::-webkit-slider-thumb {
+  background: var(--ice);
+  box-shadow: 0 0 0 1px var(--ice);
+}
+.ice-card input[type="range"]::-moz-range-thumb {
+  background: var(--ice);
+  box-shadow: 0 0 0 1px var(--ice);
+}
+
+/* Shared sliders (usage section) — keep black/default */
+
+
+/* Price field: slider + number input side by side */
+.price-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.price-field input[type="range"] {
+  flex: 1;
+}
+.price-field input[type="number"] {
+  width: 110px;
+  flex-shrink: 0;
+  padding: 5px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.ev-card .price-field input[type="number"]:focus { border-color: var(--ev); }
+.ice-card .price-field input[type="number"]:focus { border-color: var(--ice); }
+
+
+
+.dep-summary {
+  font-size: 10.5px;
+  color: var(--text-faint);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.dep-summary strong { color: var(--text-dim); font-weight: 500; }
+.dep-summary .num { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Free-year toggle */
+.free-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 400;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+.free-toggle:hover { background: var(--bg-elevated); color: var(--text); }
+.free-toggle input[type="checkbox"] {
+  width: 12px; height: 12px;
+  cursor: pointer;
+  accent-color: var(--ev);
+  margin: 0;
+}
+.ice-card .free-toggle input[type="checkbox"] { accent-color: var(--ice); }
+.free-toggle input[type="checkbox"]:checked + span {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Usage 2 columns */
+.usage-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* RIGHT — output */
+.output {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 20px;
+}
+@media (max-width: 980px) {
+  .output { position: static; }
+}
+
+/* Verdict */
+.verdict {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: all 0.2s;
+}
+.verdict.ev-wins {
+  background: var(--success-bg);
+  border-color: var(--ev);
+}
+.verdict.ice-wins {
+  background: var(--warning-bg);
+  border-color: var(--ice);
+}
+.verdict-info { flex: 1; }
+.verdict-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 2px;
+}
+.verdict-text {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  line-height: 1.2;
+}
+.verdict.ev-wins .verdict-text { color: var(--ev-dark); }
+.verdict.ice-wins .verdict-text { color: var(--ice-dark); }
+@media (prefers-color-scheme: dark) {
+  .verdict.ev-wins .verdict-text { color: var(--ev-dark); }
+  .verdict.ice-wins .verdict-text { color: var(--ice-dark); }
+}
+.verdict-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  font-weight: 300;
+}
+.verdict-icon {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-faint);
+  letter-spacing: -0.02em;
+  font-family: 'Prompt', sans-serif;
+}
+.verdict.ev-wins .verdict-icon { color: var(--ev); }
+.verdict.ice-wins .verdict-icon { color: var(--ice); }
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+.stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 3px;
+}
+.stat-value {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.stat-value.ev { color: var(--ev); }
+.stat-value.ice { color: var(--ice-dark); }
+@media (prefers-color-scheme: dark) {
+  .stat-value.ice { color: var(--ice); }
+}
+
+/* Chart */
+.chart-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-line { width: 16px; height: 2px; border-radius: 1px; }
+.legend-line.ev { background: var(--ev); }
+.legend-line.ice { background: var(--ice); }
+.legend-line.dashed { background: none; border-top: 1.5px dashed var(--text-faint); height: 0; }
+.legend-line.be { background: none; border-top: 1.5px dashed var(--text-dim); height: 0; }
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 360px;
+}
+@media (max-width: 980px) {
+  .chart-container { height: 280px; }
+}
+
+.info-note {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+/* Tire submenu */
+.tire-details {
+  margin-top: 6px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.tire-details summary {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 6px 10px;
+  background: var(--bg-elevated);
+  color: var(--text-dim);
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tire-details summary::-webkit-details-marker { display: none; }
+.tire-details[open] summary { border-bottom: 1px solid var(--border); }
+.ev-tire.tire-details[open] summary { color: var(--ev); background: var(--ev-soft); }
+.ice-tire.tire-details[open] summary { color: var(--ice-dark); background: var(--ice-soft); }
+
+.tire-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-card);
+}
+.tire-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.tire-row input[type="number"] {
+  width: 90px;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  outline: none;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ev-tire .tire-row input[type="number"]:focus { border-color: var(--ev); }
+.ice-tire .tire-row input[type="number"]:focus { border-color: var(--ice); }
+.tire-result {
+  font-size: 11px;
+  color: var(--text-dim);
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.tire-result span:first-child { font-weight: 600; color: var(--text); }
+.tire-enable {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+.tire-enable input[type="checkbox"] {
+  width: 13px; height: 13px;
+  cursor: pointer;
+  margin: 0;
+}
+.ev-tire .tire-enable input[type="checkbox"] { accent-color: var(--ev); }
+.ice-tire .tire-enable input[type="checkbox"] { accent-color: var(--ice); }
+.tire-enable input[type="checkbox"]:checked + span { color: var(--text); }
+
+/* Dim inputs when checkbox is off */
+.tire-inputs-disabled .tire-row,
+.tire-inputs-disabled .tire-result {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Model name input */
+.model-name-input {
+  width: 100%;
+  padding: 7px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  outline: none;
+}
+.ev-name-input:focus  { border-color: var(--ev); }
+.ice-name-input:focus { border-color: var(--ice); }
+.model-name-input::placeholder { color: var(--text-faint); font-weight: 400; }
+
+/* Share row */
+.share-row { display: flex; gap: 8px; }
+.share-btn {
+  flex: 1; padding: 10px 14px;
+  font-family: inherit; font-size: 13px; font-weight: 500;
+  border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card); color: var(--text-dim);
+  transition: all 0.15s;
+}
+.share-btn:hover { color: var(--text); border-color: var(--text-dim); }
+.share-btn-accent { background: var(--ev); color: #fff; border-color: var(--ev); font-weight: 600; }
+.share-btn-accent:hover { opacity: 0.88; color: #fff; }
+
+/* Share card */
+.share-card { border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-md); }
+.share-card-inner {
+  background: #0f1114; padding: 20px;
+  color: #ebedf0; font-family: 'Prompt', -apple-system, sans-serif;
+}
+.share-card-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+}
+.share-logo { font-size: 18px; letter-spacing: -0.01em; line-height: 1; }
+.share-logo-short { color: #fff; font-weight: 400; }
+.share-logo-specs { color: #4a9eff; font-weight: 600; }
+.share-tag {
+  font-size: 10px; background: rgba(74,158,255,0.18); color: #4a9eff;
+  padding: 3px 9px; border-radius: 4px; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.share-vs {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  gap: 12px; align-items: center; margin-bottom: 14px;
+}
+.share-vs-text { font-size: 13px; font-weight: 700; color: #6b7079; text-align: center; }
+.share-car { padding: 12px; border-radius: 10px; }
+.share-ev  { background: rgba(74,158,255,0.12); border: 1px solid rgba(74,158,255,0.3); }
+.share-ice { background: rgba(255,120,73,0.10);  border: 1px solid rgba(255,120,73,0.3); }
+.share-car-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 3px;
+}
+.share-ev  .share-car-label { color: #4a9eff; }
+.share-ice .share-car-label { color: #ff8c5e; }
+.share-car-name {
+  font-size: 13px; font-weight: 500; color: #ebedf0;
+  margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.share-car-cost { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.share-ev  .share-car-cost { color: #4a9eff; }
+.share-ice .share-car-cost { color: #ff8c5e; }
+.share-result {
+  padding: 12px 14px; border-radius: 8px; text-align: center;
+  font-size: 15px; font-weight: 600; margin-bottom: 12px;
+  background: rgba(255,255,255,0.05); color: #ebedf0;
+}
+.share-result.ev-wins  { background: rgba(74,158,255,0.15); color: #79b8ff; }
+.share-result.ice-wins { background: rgba(255,140,94,0.12);  color: #ffa07a; }
+.share-details {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  font-size: 12px; color: #9ba0a8; margin-bottom: 14px;
+}
+.share-details strong { color: #ebedf0; }
+.share-breakdown {
+  margin-bottom: 14px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.share-breakdown-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  font-size: 11.5px;
+  padding: 6px 12px;
+  color: #9ba0a8;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.share-breakdown-row:last-child { border-bottom: none; }
+.share-breakdown-row span:first-child { color: #6b7079; }
+.share-breakdown-row span:nth-child(2) { text-align: right; color: #c0d8ff; font-variant-numeric: tabular-nums; }
+.share-breakdown-row span:nth-child(3) { text-align: right; color: #ffd4c0; font-variant-numeric: tabular-nums; }
+.share-breakdown-header {
+  background: rgba(255,255,255,0.04);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.share-breakdown-header span { text-align: right; }
+.share-breakdown-header span:first-child { text-align: left; }
+.share-breakdown-total {
+  background: rgba(255,255,255,0.06);
+  font-weight: 700;
+  font-size: 13px;
+}
+.share-breakdown-total span:nth-child(2) { color: #4a9eff; }
+.share-breakdown-total span:nth-child(3) { color: #ff8c5e; }
+
+.share-breakdown-sub {
+  background: rgba(255,255,255,0.025);
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+.share-breakdown-sub span:first-child { color: #555b63 !important; font-size: 10.5px; }
+.share-chart-wrap {
+  margin-bottom: 14px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.03);
+  padding: 10px 8px 4px;
+  position: relative;
+  width: 100%;
+  height: 110px;
+}
+
+
+.share-card-footer {
+  font-size: 10px; color: #6b7079; text-align: center;
+  padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.07); letter-spacing: 0.03em;
+}
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-faint);
+  text-align: center;
+  font-weight: 300;
+}
+</style>
+</head>
+<body>
+
+<!-- BANNER -->
+<header class="banner">
+  <div class="banner-inner">
+    <div class="banner-left">
+      <span class="logo">
+        <span class="logo-short">SHORT</span><span class="logo-specs">SPECS</span>
+      </span>
+      <div class="banner-divider"></div>
+      <div>
+        <div class="banner-title">EV Calculator <span class="tag">Beta</span></div>
+        <div class="banner-sub">เปรียบเทียบความคุ้มค่ารถไฟฟ้ากับรถน้ำมัน</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+
+<div class="main">
+
+  <!-- LEFT: Controls -->
+  <div class="controls">
+
+    <div class="section">
+      <div class="section-title no-dot">โหมดคำนวณราคาขาย</div>
+      <div class="mode-buttons">
+        <button type="button" class="mode-btn active" data-mode="dep">Depreciation %/ปี</button>
+        <button type="button" class="mode-btn" data-mode="pct">% ของราคาต้น</button>
+        <button type="button" class="mode-btn" data-mode="baht">ราคาขาย (บาท)</button>
+      </div>
+    </div>
+
+    <div class="dual-cards">
+
+      <!-- EV CARD -->
+      <div class="car-card ev-card">
+        <div class="section-title ev">รถ EV</div>
+        <div class="field" style="margin-bottom:10px;">
+          <input type="text" id="ev_name" placeholder="ชื่อรุ่น เช่น BYD Atto 3" class="model-name-input ev-name-input">
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">ราคารถ (บาท)</span>
+          </div>
+          <div class="price-field">
+            <input type="range" id="ev_price_range" min="300000" max="3000000" step="10000" value="1000000">
+            <input type="number" id="ev_price" value="1000000" step="10000" min="0">
+          </div>
+          <div class="field-hint">เริ่ม 5–7 แสน · กลาง 9 แสน–1.3M · พรีเมียม 1.5M+</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">กินไฟ kWh/100km</span>
+            <span class="field-value" id="ev_eff_out">16</span>
+          </div>
+          <input type="range" id="ev_eff" min="10" max="25" step="0.5" value="16">
+          <div class="field-hint">เก๋ง 13–15 · SUV 16–19 · ใหญ่ 18–22</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">ค่าไฟ บาท/kWh</span>
+            <span class="field-value" id="ev_kwh_out">4.00</span>
+          </div>
+          <input type="range" id="ev_kwh" min="0" max="8" step="0.25" value="4">
+          <div class="field-hint">บ้าน TOU 2.6–3.5 · ปกติ 4–4.5 · DC 7–8</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">ประกัน/ปี</span>
+            <span class="field-value" id="ev_ins_out">25,000</span>
+          </div>
+          <input type="range" id="ev_ins" min="0" max="50000" step="500" value="25000">
+          <div class="field-hint">800K–1.2M: 22–30K · 1.2M+: 30–45K</div>
+          <label class="free-toggle"><input type="checkbox" id="ev_free_ins"><span>ฟรีประกันปีแรก</span></label>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">บำรุง/ปี</span>
+            <span class="field-value" id="ev_maint_out">5,000</span>
+          </div>
+          <input type="range" id="ev_maint" min="0" max="20000" step="500" value="5000">
+          <div class="field-hint">รวมยางแล้ว: ตรวจ+เบรก+อื่นๆ</div>
+          <label class="free-toggle"><input type="checkbox" id="ev_free_maint"><span>ฟรีบำรุงรักษาปีแรก</span></label>
+
+          <details class="tire-details ev-tire">
+            <summary>🔧 คำนวณค่ายางอัตโนมัติ</summary>
+            <div class="tire-body">
+              <label class="tire-enable">
+                <input type="checkbox" id="ev_tire_on">
+                <span>รวมค่ายางใน "บำรุง/ปี" อัตโนมัติ</span>
+              </label>
+              <div class="tire-row">
+                <span>ราคายาง/ชุด (บาท)</span>
+                <input type="number" id="ev_tire_price" value="12000" step="500" min="0">
+              </div>
+              <div class="tire-row">
+                <span>เปลี่ยนทุก (กม.)</span>
+                <input type="number" id="ev_tire_km" value="40000" step="5000" min="5000">
+              </div>
+              <div class="tire-result">
+                ค่ายางเฉลี่ย <span id="ev_tire_avg">—</span> บ./ปี
+                <span class="tire-note" id="ev_tire_note"></span>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="field dep-input">
+          <div class="field-label">
+            <span class="field-name">Depreciation %/ปี</span>
+            <span class="field-value" id="ev_dep_out">17%</span>
+          </div>
+          <input type="range" id="ev_dep" min="5" max="30" step="1" value="17">
+          <div class="field-hint">EV ทั่วไป 15–20% · ใหม่/ไม่มั่นใจ 20–25%</div>
+        </div>
+
+        <div class="field pct-input" style="display:none;">
+          <div class="field-label">
+            <span class="field-name">ราคาขาย % ของราคาต้น</span>
+            <span class="field-value" id="ev_pct_out">45%</span>
+          </div>
+          <input type="range" id="ev_pct" min="10" max="95" step="1" value="45">
+        </div>
+
+        <div class="field baht-input" style="display:none;">
+          <div class="field-label">
+            <span class="field-name">ราคาขาย (บาท)</span>
+          </div>
+          <input type="number" id="ev_baht" value="450000" step="10000">
+          <div class="field-hint" id="ev_baht_pct">เทียบเท่า 45% ของราคาต้น</div>
+        </div>
+
+        <div class="dep-summary" id="ev_dep_summary">
+          <strong>เสื่อมเฉลี่ย:</strong> <span class="num" id="ev_dep_avg">-</span> บ./ปี
+        </div>
+      </div>
+
+      <!-- ICE CARD -->
+      <div class="car-card ice-card">
+        <div class="section-title ice">รถน้ำมัน</div>
+        <div class="field" style="margin-bottom:10px;">
+          <input type="text" id="ice_name" placeholder="ชื่อรุ่น เช่น Honda City" class="model-name-input ice-name-input">
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">ราคารถ (บาท)</span>
+          </div>
+          <div class="price-field">
+            <input type="range" id="ice_price_range" min="300000" max="3000000" step="10000" value="700000">
+            <input type="number" id="ice_price" value="700000" step="10000" min="0">
+          </div>
+          <div class="field-hint">Eco 4–7 แสน · C-seg 8 แสน–1.3M · SUV 1M+</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">กินน้ำมัน km/L</span>
+            <span class="field-value" id="ice_eff_out">18.0</span>
+          </div>
+          <input type="range" id="ice_eff" min="6" max="30" step="0.1" value="18">
+          <div class="field-hint">Eco 18–23 · Hybrid 22–28 · SUV 12–16</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">ราคาน้ำมัน บาท/ลิตร</span>
+            <span class="field-value" id="ice_fuel_out">38.0</span>
+          </div>
+          <input type="range" id="ice_fuel" min="0" max="50" step="0.5" value="38">
+          <div class="field-hint">95: 38–42 · GH91: 35–38 · ดีเซล 32–36</div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">ประกัน/ปี</span>
+            <span class="field-value" id="ice_ins_out">16,000</span>
+          </div>
+          <input type="range" id="ice_ins" min="0" max="40000" step="500" value="16000">
+          <div class="field-hint">700K–1M: 16–20K · 1M+: 20–30K</div>
+          <label class="free-toggle"><input type="checkbox" id="ice_free_ins"><span>ฟรีประกันปีแรก</span></label>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            <span class="field-name">บำรุง/ปี</span>
+            <span class="field-value" id="ice_maint_out">12,000</span>
+          </div>
+          <input type="range" id="ice_maint" min="0" max="40000" step="500" value="12000">
+          <div class="field-hint">รวมยางแล้ว: ตรวจ+เบรก+อื่นๆ</div>
+          <label class="free-toggle"><input type="checkbox" id="ice_free_maint"><span>ฟรีบำรุงรักษาปีแรก</span></label>
+
+          <details class="tire-details ice-tire">
+            <summary>🔧 คำนวณค่ายางอัตโนมัติ</summary>
+            <div class="tire-body">
+              <label class="tire-enable">
+                <input type="checkbox" id="ice_tire_on">
+                <span>รวมค่ายางใน "บำรุง/ปี" อัตโนมัติ</span>
+              </label>
+              <div class="tire-row">
+                <span>ราคายาง/ชุด (บาท)</span>
+                <input type="number" id="ice_tire_price" value="7000" step="500" min="0">
+              </div>
+              <div class="tire-row">
+                <span>เปลี่ยนทุก (กม.)</span>
+                <input type="number" id="ice_tire_km" value="50000" step="5000" min="5000">
+              </div>
+              <div class="tire-result">
+                ค่ายางเฉลี่ย <span id="ice_tire_avg">—</span> บ./ปี
+                <span class="tire-note" id="ice_tire_note"></span>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="field dep-input">
+          <div class="field-label">
+            <span class="field-name">Depreciation %/ปี</span>
+            <span class="field-value" id="ice_dep_out">10%</span>
+          </div>
+          <input type="range" id="ice_dep" min="5" max="30" step="1" value="10">
+          <div class="field-hint">Toyota/Honda 8–10% · ทั่วไป 10–13%</div>
+        </div>
+
+        <div class="field pct-input" style="display:none;">
+          <div class="field-label">
+            <span class="field-name">ราคาขาย % ของราคาต้น</span>
+            <span class="field-value" id="ice_pct_out">60%</span>
+          </div>
+          <input type="range" id="ice_pct" min="10" max="95" step="1" value="60">
+        </div>
+
+        <div class="field baht-input" style="display:none;">
+          <div class="field-label">
+            <span class="field-name">ราคาขาย (บาท)</span>
+          </div>
+          <input type="number" id="ice_baht" value="420000" step="10000">
+          <div class="field-hint" id="ice_baht_pct">เทียบเท่า 60% ของราคาต้น</div>
+        </div>
+
+        <div class="dep-summary" id="ice_dep_summary">
+          <strong>เสื่อมเฉลี่ย:</strong> <span class="num" id="ice_dep_avg">-</span> บ./ปี
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage -->
+    <div class="section">
+      <div class="section-title no-dot">การใช้งาน</div>
+      <div class="usage-grid">
+        <div class="field" style="margin-bottom:0;">
+          <div class="field-label">
+            <span class="field-name">ระยะทาง/ปี (กม.)</span>
+            <span class="field-value" id="km_year_out">15,000</span>
+          </div>
+          <input type="range" id="km_year" min="5000" max="50000" step="1000" value="15000">
+          <div class="field-hint">เฉลี่ยคนไทย 12,000–18,000</div>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <div class="field-label">
+            <span class="field-name">ปีที่จะขาย</span>
+            <span class="field-value" id="years_out">5</span>
+          </div>
+          <input type="range" id="years" min="1" max="15" step="1" value="5">
+          <div class="field-hint">เฉลี่ยคนไทยถือรถ 5–7 ปี</div>
+        </div>
+        <div class="field" style="margin-bottom:0; grid-column: 1 / -1;">
+          <div class="field-label">
+            <span class="field-name">ช่วงแสดงในกราฟ (ปี)</span>
+            <span class="field-value" id="view_years_out">10</span>
+          </div>
+          <input type="range" id="view_years" min="3" max="20" step="1" value="10">
+          <div class="field-hint">ขยายให้สั้นเพื่อเห็น scale Y ละเอียดขึ้น · ยืดให้ยาวเพื่อดู projection</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: Output -->
+  <div class="output">
+
+    <div class="verdict" id="verdict">
+      <div class="verdict-info">
+        <div class="verdict-label">สรุปผล</div>
+        <div class="verdict-text" id="verdict_text">กำลังคำนวณ...</div>
+        <div class="verdict-sub" id="verdict_sub"></div>
+      </div>
+      <div class="verdict-icon" id="verdict_icon">—</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">จุดคุ้มทุน</div>
+        <div class="stat-value" id="be_year">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">รวม EV</div>
+        <div class="stat-value ev" id="ev_total">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">รวม ICE</div>
+        <div class="stat-value ice" id="ice_total">—</div>
+      </div>
+    </div>
+
+    <!-- Share buttons -->
+    <div class="share-row">
+      <button type="button" id="btn_copy_link" class="share-btn" onclick="copyLink()">
+        🔗 Copy Link
+      </button>
+      <button type="button" id="btn_screenshot" class="share-btn share-btn-accent" onclick="toggleShareCard()">
+        📸 Share Card
+      </button>
+    </div>
+
+    <!-- Share card — screenshot-ready -->
+    <div id="share_card" class="share-card" style="display:none;">
+      <div class="share-card-inner">
+
+        <!-- Header: SHORT SPECS | ซื้อ EV คุ้มไหม? -->
+        <div class="share-card-header">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <span class="share-logo"><span class="share-logo-short">SHORT</span><span class="share-logo-specs">SPECS</span></span>
+            <div style="width:1px; height:20px; background:rgba(255,255,255,0.15);"></div>
+            <span style="font-size:15px; font-weight:600; color:#ebedf0; letter-spacing:-0.01em; font-family:'Prompt',sans-serif;">ซื้อ EV คุ้มไหม?</span>
+          </div>
+          <span class="share-tag">EV CALC</span>
+        </div>
+
+        <!-- VS row -->
+        <div class="share-vs">
+          <div class="share-car share-ev">
+            <div class="share-car-label">EV</div>
+            <div class="share-car-name" id="share_ev_name">—</div>
+            <div class="share-car-cost" id="share_ev_cost">—</div>
+          </div>
+          <div class="share-vs-text">VS</div>
+          <div class="share-car share-ice">
+            <div class="share-car-label">ICE</div>
+            <div class="share-car-name" id="share_ice_name">—</div>
+            <div class="share-car-cost" id="share_ice_cost">—</div>
+          </div>
+        </div>
+
+        <!-- Result bar -->
+        <div class="share-result" id="share_result_bar">
+          <span id="share_winner_text">—</span>
+        </div>
+
+        <!-- Cost breakdown -->
+        <div class="share-breakdown">
+          <div class="share-breakdown-row share-breakdown-header">
+            <span></span>
+            <span style="color:#4a9eff;" id="share_ev_name2">EV</span>
+            <span style="color:#ff8c5e;" id="share_ice_name2">ICE</span>
+          </div>
+          <div class="share-breakdown-row">
+            <span>ราคารถ</span>
+            <span id="sb_ev_price">—</span>
+            <span id="sb_ice_price">—</span>
+          </div>
+          <div class="share-breakdown-row">
+            <span>ราคาขาย (−)</span>
+            <span id="sb_ev_sell">—</span>
+            <span id="sb_ice_sell">—</span>
+          </div>
+          <div class="share-breakdown-row share-breakdown-sub">
+            <span>ค่าเสื่อม (สุทธิ)</span>
+            <span id="sb_ev_dep">—</span>
+            <span id="sb_ice_dep">—</span>
+          </div>
+          <div class="share-breakdown-row">
+            <span>ค่าพลังงาน</span>
+            <span id="sb_ev_energy">—</span>
+            <span id="sb_ice_energy">—</span>
+          </div>
+          <div class="share-breakdown-row">
+            <span>ประกัน</span>
+            <span id="sb_ev_ins">—</span>
+            <span id="sb_ice_ins">—</span>
+          </div>
+          <div class="share-breakdown-row">
+            <span>บำรุงรักษา</span>
+            <span id="sb_ev_maint">—</span>
+            <span id="sb_ice_maint">—</span>
+          </div>
+          <div class="share-breakdown-row share-breakdown-total">
+            <span>รวม</span>
+            <span id="sb_ev_total">—</span>
+            <span id="sb_ice_total">—</span>
+          </div>
+        </div>
+
+        <!-- Mini chart -->
+        <div class="share-chart-wrap">
+          <canvas id="shareChart"></canvas>
+        </div>
+
+        <!-- Stats row -->
+        <div class="share-details">
+          <span>📍 คุ้มทุน <strong id="share_be">—</strong></span>
+          <span>🛣️ <strong id="share_km">—</strong> กม./ปี</span>
+          <span>📅 ถือ <strong id="share_years">—</strong> ปี</span>
+        </div>
+
+        <div class="share-card-footer">shortspecs.com · คำนวณด้วยตัวเองได้ที่ลิงก์ใน bio</div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-header">
+        <div class="chart-title">ต้นทุนสะสมตลอดอายุการถือ</div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-line ev"></span>EV</div>
+          <div class="legend-item"><span class="legend-line ice"></span>ICE</div>
+          <div class="legend-item"><span class="legend-line dashed"></span>What-if</div>
+          <div class="legend-item"><span class="legend-line be"></span>คุ้มทุน</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="costChart"></canvas>
+      </div>
+      <div class="info-note">
+        ปี 0 = ราคารถ − ราคาขาย (base) · ปี 1+ บวกค่าเดินทาง ประกัน และบำรุงสะสมทุกปี · เส้นทึบ = ช่วงที่ถือรถจริง · เส้นประ = สมมติถือต่อ
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer class="footer">
+  Built for Short Specs · ค่าทั้งหมดเป็นค่าประมาณการ ผู้ใช้ควรตรวจสอบราคาจริงกับผู้จำหน่าย<br>
+  คำนวณทุกอย่างใน browser ของคุณ ไม่มีการส่งข้อมูลออกไปไหน
+</footer>
+
+</div>
+
+<script>
+(function() {
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+  const fmtK = n => {
+    if (Math.abs(n) >= 1000000) return (n/1000000).toFixed(2) + 'M';
+    if (Math.abs(n) >= 1000) return Math.round(n/1000) + 'K';
+    return Math.round(n).toString();
+  };
+
+  let mode = 'dep';
+  const ids = ['ev_price','ev_eff','ev_kwh','ev_ins','ev_maint','ev_dep','ev_pct','ev_baht','ice_price','ice_eff','ice_fuel','ice_ins','ice_maint','ice_dep','ice_pct','ice_baht','km_year','years','view_years'];
+  const inputs = {};
+  ids.forEach(id => inputs[id] = document.getElementById(id));
+
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mode = btn.dataset.mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      document.querySelectorAll('.dep-input').forEach(el => el.style.display = mode === 'dep' ? '' : 'none');
+      document.querySelectorAll('.pct-input').forEach(el => el.style.display = mode === 'pct' ? '' : 'none');
+      document.querySelectorAll('.baht-input').forEach(el => el.style.display = mode === 'baht' ? '' : 'none');
+      // dep summary shown always now (model is linear in all modes)
+      update();
+    });
+  });
+
+
+
+  function getVals() {
+    const evP = +inputs.ev_price.value || 0;
+    const iceP = +inputs.ice_price.value || 0;
+    const evB = +inputs.ev_baht.value || 0;
+    const iceB = +inputs.ice_baht.value || 0;
+    return {
+      evPrice: Math.max(0, evP), evEff: +inputs.ev_eff.value, evKwh: +inputs.ev_kwh.value,
+      evIns: +inputs.ev_ins.value, evMaint: +inputs.ev_maint.value,
+      evDep: +inputs.ev_dep.value / 100, evPct: +inputs.ev_pct.value / 100, evBaht: Math.max(0, evB),
+      evFreeIns: document.getElementById('ev_free_ins').checked,
+      evFreeMaint: document.getElementById('ev_free_maint').checked,
+      icePrice: Math.max(0, iceP), iceEff: +inputs.ice_eff.value, iceFuel: +inputs.ice_fuel.value,
+      iceIns: +inputs.ice_ins.value, iceMaint: +inputs.ice_maint.value,
+      iceDep: +inputs.ice_dep.value / 100, icePct: +inputs.ice_pct.value / 100, iceBaht: Math.max(0, iceB),
+      iceFreeIns: document.getElementById('ice_free_ins').checked,
+      iceFreeMaint: document.getElementById('ice_free_maint').checked,
+      kmYear: +inputs.km_year.value, years: +inputs.years.value,
+      viewYears: +inputs.view_years.value
+    };
+  }
+
+  // TCO model — ตรงกับ spreadsheet คำนวณ
+  // ปี 0 = ราคารถ (เงินที่จ่ายออกไป ยังไม่ได้ขาย)
+  // ปี n = ราคารถ + ค่าใช้จ่ายสะสม - residual(n)  [residual ลดตามเวลา linear]
+  // ที่ปีขาย = ราคารถ + ค่าใช้จ่าย - ราคาขาย ← ตรงกับ spreadsheet 100%
+  // sellPrice ของรถ: คืนค่าเป็นบาทตรงๆ จาก input ของ user
+  function sellPrice(v, isEV) {
+    const price = isEV ? v.evPrice : v.icePrice;
+    if (mode === 'dep') {
+      const dep = isEV ? v.evDep : v.iceDep;
+      return price * Math.pow(1 - dep, Math.max(1, v.years));
+    }
+    if (mode === 'pct') {
+      const pct = isEV ? v.evPct : v.icePct;
+      return price * pct;
+    }
+    // baht mode: ราคาขายตายตัว ไม่เปลี่ยนตามปี
+    return isEV ? v.evBaht : v.iceBaht;
+  }
+
+  // depPerYear ใช้สำหรับ graph slope เท่านั้น (linear interpolation 0→sellYear)
+  function depPerYear(v, isEV) {
+    const price = isEV ? v.evPrice : v.icePrice;
+    const sell  = sellPrice(v, isEV);
+    return (price - sell) / Math.max(1, v.years);
+  }
+
+  // Model: ปี 0 = dep เท่านั้น (ราคารถ − ราคาขาย) ← anchor
+  // ปี n = dep + (energy + ins + maint) × n
+  // ตรงกับ spreadsheet + break-even = 1.449 ปี
+  // freeIns/freeMaint: ปีที่ 1 ฟรี → นับจาก year-1 แทน year
+  function totalCost(v, isEV, year) {
+    const price     = isEV ? v.evPrice    : v.icePrice;
+    const ins       = isEV ? v.evIns      : v.iceIns;
+    const maint     = isEV ? v.evMaint    : v.iceMaint;
+    const freeIns   = isEV ? v.evFreeIns  : v.iceFreeIns;
+    const freeMaint = isEV ? v.evFreeMaint : v.iceFreeMaint;
+    const energy_py = isEV
+      ? (v.kmYear * v.evEff / 100) * v.evKwh
+      : (v.kmYear / v.iceEff) * v.iceFuel;
+
+    const sell = sellPrice(v, isEV);
+    const dep  = price - sell;
+
+    if (year === 0) return dep;   // ← ปี 0: แค่ dep
+
+    const insYrs  = freeIns   ? Math.max(0, year - 1) : year;
+    const maintYrs= freeMaint ? Math.max(0, year - 1) : year;
+
+    return dep + energy_py * year + ins * insYrs + maint * maintYrs;
+  }
+
+  let costChart;
+  function getColors() {
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    return {
+      ev: dark ? '#4a9eff' : '#007AFF',
+      ice: dark ? '#ff8c5e' : '#ff7849',
+      text: dark ? '#9ba0a8' : '#5b6068',
+      textBright: dark ? '#ebedf0' : '#15171a',
+      grid: dark ? 'rgba(255,255,255,0.05)' : 'rgba(20,23,28,0.06)',
+      faint: dark ? '#6b7079' : '#8a8f97'
+    };
+  }
+
+  function update() {
+    const v = getVals();
+    const C = getColors();
+
+    // Refresh tire display (km_year may have changed)
+    ['ev','ice'].forEach(p => {
+      const el = document.getElementById(p + '_tire_avg');
+      if (el) {
+        const perYear = tirePerYear(p);
+        el.textContent = fmt(Math.round(perYear));
+        const km = +inputs.km_year.value || 0;
+        const tireKm = +(document.getElementById(p + '_tire_km').value) || 1;
+        const note = document.getElementById(p + '_tire_note');
+        if (note) note.textContent = km > 0 ? `(เปลี่ยนทุก ~${(tireKm/km).toFixed(1)} ปี)` : '';
+      }
+    });
+
+    document.getElementById('ev_eff_out').textContent = v.evEff;
+    document.getElementById('ev_kwh_out').textContent = v.evKwh.toFixed(2);
+    document.getElementById('ev_ins_out').textContent = fmt(v.evIns);
+    document.getElementById('ev_maint_out').textContent = fmt(v.evMaint);
+    document.getElementById('ev_dep_out').textContent = (v.evDep * 100).toFixed(0) + '%';
+    document.getElementById('ev_pct_out').textContent = (v.evPct * 100).toFixed(0) + '%';
+    document.getElementById('ice_eff_out').textContent = v.iceEff.toFixed(1);
+    document.getElementById('ice_fuel_out').textContent = v.iceFuel.toFixed(1);
+    document.getElementById('ice_ins_out').textContent = fmt(v.iceIns);
+    document.getElementById('ice_maint_out').textContent = fmt(v.iceMaint);
+    document.getElementById('ice_dep_out').textContent = (v.iceDep * 100).toFixed(0) + '%';
+    document.getElementById('ice_pct_out').textContent = (v.icePct * 100).toFixed(0) + '%';
+    document.getElementById('km_year_out').textContent = fmt(v.kmYear);
+    document.getElementById('years_out').textContent = v.years;
+    document.getElementById('view_years_out').textContent = v.viewYears;
+
+    if (mode === 'baht') {
+      document.getElementById('ev_baht_pct').textContent = 'เทียบเท่า ' + (v.evBaht / v.evPrice * 100).toFixed(1) + '% ของราคาต้น';
+      document.getElementById('ice_baht_pct').textContent = 'เทียบเท่า ' + (v.iceBaht / v.icePrice * 100).toFixed(1) + '% ของราคาต้น';
+    }
+    // Show avg dep summary for all modes (not just non-dep) since now all modes use linear avg
+    document.getElementById('ev_dep_avg').textContent = fmt(depPerYear(v, true));
+    document.getElementById('ice_dep_avg').textContent = fmt(depPerYear(v, false));
+
+    const maxYears = v.viewYears;
+    const sellYear = v.years;
+    const labels = [];
+    const evSolid = [], evDashed = [], iceSolid = [], iceDashed = [];
+
+    for (let y = 0; y <= maxYears; y++) {
+      labels.push(y);
+      const evCost = totalCost(v, true, y);
+      const iceCost = totalCost(v, false, y);
+      if (y <= sellYear) {
+        evSolid.push(evCost); iceSolid.push(iceCost);
+        evDashed.push(null); iceDashed.push(null);
+      } else {
+        evSolid.push(null); iceSolid.push(null);
+        evDashed.push(evCost); iceDashed.push(iceCost);
+      }
+      if (y === sellYear && y <= maxYears) { evDashed[y] = evCost; iceDashed[y] = iceCost; }
+    }
+
+    // Break-even ค้นหาภายในช่วงที่แสดง
+    let breakEvenYear = null;
+    for (let y = 1; y <= maxYears; y++) {
+      const evC = totalCost(v, true, y), iceC = totalCost(v, false, y);
+      const evP = totalCost(v, true, y-1), iceP = totalCost(v, false, y-1);
+      if ((evP - iceP) * (evC - iceC) < 0 || (evP > iceP && evC <= iceC)) {
+        const t = (evP - iceP) / ((evP - iceP) - (evC - iceC));
+        breakEvenYear = y - 1 + t;
+        break;
+      }
+    }
+
+    const evAt = totalCost(v, true, sellYear);
+    const iceAt = totalCost(v, false, sellYear);
+    const diff = iceAt - evAt;
+
+    document.getElementById('ev_total').textContent = fmtK(evAt) + ' บ.';
+    document.getElementById('ice_total').textContent = fmtK(iceAt) + ' บ.';
+
+    const verdictEl = document.getElementById('verdict');
+    const vText = document.getElementById('verdict_text');
+    const vSub = document.getElementById('verdict_sub');
+    const vIcon = document.getElementById('verdict_icon');
+    verdictEl.classList.remove('ev-wins', 'ice-wins');
+    if (diff > 0) {
+      verdictEl.classList.add('ev-wins');
+      vText.textContent = 'EV คุ้มกว่า ' + fmtK(diff) + ' บาท';
+      vSub.textContent = 'ที่ ' + sellYear + ' ปี · วิ่ง ' + fmt(v.kmYear) + ' กม./ปี';
+      vIcon.textContent = 'EV';
+    } else if (diff < 0) {
+      verdictEl.classList.add('ice-wins');
+      vText.textContent = 'น้ำมันคุ้มกว่า ' + fmtK(-diff) + ' บาท';
+      vSub.textContent = 'ที่ ' + sellYear + ' ปี · วิ่ง ' + fmt(v.kmYear) + ' กม./ปี';
+      vIcon.textContent = 'ICE';
+    } else {
+      vText.textContent = 'เสมอกัน'; vSub.textContent = '';
+      vIcon.textContent = '=';
+    }
+
+    // Update share card
+    const evName  = document.getElementById('ev_name').value  || 'EV';
+    const iceName = document.getElementById('ice_name').value || 'ICE';
+    document.getElementById('share_ev_name').textContent  = evName;
+    document.getElementById('share_ice_name').textContent = iceName;
+    document.getElementById('share_ev_cost').textContent  = fmtK(evAt) + ' บ.';
+    document.getElementById('share_ice_cost').textContent = fmtK(iceAt) + ' บ.';
+    document.getElementById('share_km').textContent    = fmt(v.kmYear);
+    document.getElementById('share_years').textContent = sellYear;
+    const beEl2 = document.getElementById('share_be');
+    beEl2.textContent = breakEvenYear ? breakEvenYear.toFixed(1) + ' ปี' : '>15 ปี';
+    const resultBar = document.getElementById('share_result_bar');
+    const winnerEl  = document.getElementById('share_winner_text');
+    resultBar.classList.remove('ev-wins','ice-wins');
+    if (diff > 0) {
+      resultBar.classList.add('ev-wins');
+      winnerEl.textContent = '✅ EV คุ้มกว่า ' + fmtK(diff) + ' บาท ใน ' + sellYear + ' ปี';
+    } else if (diff < 0) {
+      resultBar.classList.add('ice-wins');
+      winnerEl.textContent = '⛽ น้ำมันคุ้มกว่า ' + fmtK(-diff) + ' บาท ใน ' + sellYear + ' ปี';
+    } else {
+      winnerEl.textContent = '= เสมอกัน';
+    }
+
+    // Breakdown table
+    const evName2  = document.getElementById('ev_name').value  || 'EV';
+    const iceName2 = document.getElementById('ice_name').value || 'ICE';
+    document.getElementById('share_ev_name2').textContent  = evName2;
+    document.getElementById('share_ice_name2').textContent = iceName2;
+
+    const evSell  = sellPrice(v, true);
+    const iceSell = sellPrice(v, false);
+    const evDep   = v.evPrice - evSell;
+    const iceDep  = v.icePrice - iceSell;
+    const evEPy   = (v.kmYear * v.evEff / 100) * v.evKwh;
+    const iceEPy  = (v.kmYear / v.iceEff) * v.iceFuel;
+
+    const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    set('sb_ev_price',  fmtK(v.evPrice)  + ' บ.');
+    set('sb_ice_price', fmtK(v.icePrice) + ' บ.');
+    set('sb_ev_sell',   '−' + fmtK(evSell)  + ' บ.');
+    set('sb_ice_sell',  '−' + fmtK(iceSell) + ' บ.');
+    set('sb_ev_dep',    fmtK(evDep)          + ' บ.');
+    set('sb_ice_dep',   fmtK(iceDep)         + ' บ.');
+    set('sb_ev_energy', fmtK(Math.round(evEPy  * sellYear)) + ' บ.');
+    set('sb_ice_energy',fmtK(Math.round(iceEPy * sellYear)) + ' บ.');
+    set('sb_ev_ins',    fmtK(v.evIns  * sellYear) + ' บ.');
+    set('sb_ice_ins',   fmtK(v.iceIns * sellYear) + ' บ.');
+    set('sb_ev_maint',  fmtK(v.evMaint  * sellYear) + ' บ.');
+    set('sb_ice_maint', fmtK(v.iceMaint * sellYear) + ' บ.');
+    set('sb_ev_total',  fmtK(evAt)  + ' บ.');
+    set('sb_ice_total', fmtK(iceAt) + ' บ.');
+
+    // Mini chart — only draw/update when share card is visible
+    if (document.getElementById('share_card').style.display !== 'none') {
+      drawShareChart(v, sellYear, maxYears, breakEvenYear);
+    }
+    const beEl = document.getElementById('be_year');
+    if (breakEvenYear !== null && breakEvenYear > 0) beEl.textContent = breakEvenYear.toFixed(1) + ' ปี';
+    else if (totalCost(v, true, 1) < totalCost(v, false, 1)) beEl.textContent = '<1 ปี';
+    else beEl.textContent = '>' + maxYears + ' ปี';
+
+    const beAnno = breakEvenYear !== null && breakEvenYear > 0 && breakEvenYear < maxYears ? breakEvenYear : null;
+
+    // Y-axis min: กราฟเริ่มที่ราคารถต่ำกว่าลบ 5% เพื่อเห็นความต่างราคาตั้งแต่ปี 0
+    const yMin = Math.min(v.evPrice, v.icePrice) * 0;  // keep at 0, lines start at price naturally
+
+    if (costChart) {
+      costChart.data.labels = labels;
+      costChart.data.datasets[0].data = evSolid;
+      costChart.data.datasets[1].data = iceSolid;
+      costChart.data.datasets[2].data = evDashed;
+      costChart.data.datasets[3].data = iceDashed;
+      costChart.data.datasets[0].borderColor = C.ev;
+      costChart.data.datasets[1].borderColor = C.ice;
+      costChart.data.datasets[2].borderColor = C.ev;
+      costChart.data.datasets[3].borderColor = C.ice;
+      costChart.options.plugins.beLine = beAnno;
+      costChart.options.plugins.sellYear = sellYear;
+      costChart.options.plugins.maxYears = maxYears;
+      costChart.options.scales.x.ticks.color = C.text;
+      costChart.options.scales.y.ticks.color = C.text;
+      costChart.options.scales.x.grid.color = C.grid;
+      costChart.options.scales.y.grid.color = C.grid;
+      costChart.options.scales.y.min = 0;
+      costChart.update('none');
+    } else {
+      const verticalLinesPlugin = {
+        id: 'verticalLines',
+        afterDatasetsDraw(chart) {
+          const COL = getColors();
+          const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+          const sy = chart.options.plugins.sellYear;
+          const mx = chart.options.plugins.maxYears || 15;
+          if (sy && sy > 0 && sy < mx) {
+            const xSell = x.getPixelForValue(sy);
+            ctx.save();
+            ctx.strokeStyle = COL.faint; ctx.globalAlpha = 0.4;
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(xSell, top); ctx.lineTo(xSell, bottom); ctx.stroke();
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = COL.faint;
+            ctx.font = '10px Prompt, sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('ขายปี ' + sy, xSell, bottom + 18);
+            ctx.restore();
+          }
+          const be = chart.options.plugins.beLine;
+          if (be !== null && be !== undefined) {
+            const xBe = x.getPixelForValue(be);
+            ctx.save();
+            ctx.setLineDash([5, 4]); ctx.strokeStyle = COL.text; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(xBe, top); ctx.lineTo(xBe, bottom); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = COL.textBright;
+            ctx.font = '600 11px Prompt, sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('คุ้มทุน ' + be.toFixed(1) + ' ปี', xBe, top + 14);
+            ctx.restore();
+          }
+        }
+      };
+
+      costChart = new Chart(document.getElementById('costChart'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'EV', data: evSolid, borderColor: C.ev, backgroundColor: C.ev, tension: 0, pointRadius: 0, pointHoverRadius: 5, borderWidth: 2.5, spanGaps: false },
+            { label: 'ICE', data: iceSolid, borderColor: C.ice, backgroundColor: C.ice, tension: 0, pointRadius: 0, pointHoverRadius: 5, borderWidth: 2.5, spanGaps: false },
+            { label: 'EV', data: evDashed, borderColor: C.ev, backgroundColor: C.ev, borderDash: [5,4], tension: 0, pointRadius: 0, pointHoverRadius: 4, borderWidth: 1.5, spanGaps: false },
+            { label: 'ICE', data: iceDashed, borderColor: C.ice, backgroundColor: C.ice, borderDash: [5,4], tension: 0, pointRadius: 0, pointHoverRadius: 4, borderWidth: 1.5, spanGaps: false }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false }, beLine: beAnno, sellYear: sellYear, maxYears: maxYears,
+            tooltip: {
+              backgroundColor: '#15171a', titleColor: '#fff', bodyColor: '#cdd2d9',
+              borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, padding: 10, cornerRadius: 6,
+              titleFont: { family: 'Prompt', size: 11, weight: 'bold' }, bodyFont: { family: 'Prompt', size: 12 },
+              callbacks: { title: i => 'ปีที่ ' + i[0].label, label: c => c.dataset.label + ': ' + fmt(c.parsed.y) + ' บ.' }
+            }
+          },
+          scales: {
+            x: { title: { display: true, text: 'ปี', color: C.text, font: { family: 'Prompt', size: 11 } }, ticks: { color: C.text, font: { family: 'Prompt', size: 11 } }, grid: { color: C.grid } },
+            y: { min: 0, title: { display: true, text: 'ต้นทุนสะสม (บาท)', color: C.text, font: { family: 'Prompt', size: 11 } }, ticks: { color: C.text, font: { family: 'Prompt', size: 11 }, callback: v => fmtK(v) }, grid: { color: C.grid } }
+          }
+        },
+        plugins: [verticalLinesPlugin]
+      });
+    }
+  }
+
+  // Tire submenu logic
+  function tirePerYear(prefix) {
+    const km     = +inputs.km_year.value || 0;
+    const price  = +(document.getElementById(prefix + '_tire_price').value) || 0;
+    const tireKm = +(document.getElementById(prefix + '_tire_km').value)    || 1;
+    return km > 0 && tireKm > 0 ? (price * km / tireKm) : 0;
+  }
+
+  function updateTire(prefix) {
+    const perYear  = tirePerYear(prefix);
+    const avgEl    = document.getElementById(prefix + '_tire_avg');
+    const noteEl   = document.getElementById(prefix + '_tire_note');
+    const maintEl  = inputs[prefix + '_maint'];
+    const onEl     = document.getElementById(prefix + '_tire_on');
+    const body     = document.querySelector('.' + prefix + '-tire .tire-body');
+
+    // Update display
+    avgEl.textContent = fmt(Math.round(perYear));
+    const km     = +inputs.km_year.value || 0;
+    const tireKm = +(document.getElementById(prefix + '_tire_km').value) || 1;
+    noteEl.textContent = km > 0 ? `(เปลี่ยนทุก ~${(tireKm / km).toFixed(1)} ปี)` : '';
+
+    // Dim inputs when disabled
+    if (body) body.classList.toggle('tire-inputs-disabled', !onEl.checked);
+
+    // Only update maint slider if checkbox is ON
+    if (!onEl.checked) return;
+
+    const baseKey = '_maint_base_' + prefix;
+    if (window[baseKey] === undefined) window[baseKey] = +maintEl.value;
+    const newTotal = Math.round(window[baseKey] + perYear);
+    const clamped  = Math.min(newTotal, +maintEl.max);
+    maintEl.value  = clamped;
+    document.getElementById(prefix + '_maint_out').textContent = fmt(clamped);
+  }
+
+  // When maint slider is moved manually, reset base
+  ['ev_maint', 'ice_maint'].forEach(id => {
+    const prefix = id.replace('_maint', '');
+    const reset  = () => { window['_maint_base_' + prefix] = +inputs[id].value; };
+    inputs[id].addEventListener('mousedown',  reset);
+    inputs[id].addEventListener('touchstart', reset);
+  });
+
+  // Wire tire inputs + checkbox
+  ['ev', 'ice'].forEach(prefix => {
+    // checkbox toggle
+    document.getElementById(prefix + '_tire_on').addEventListener('change', () => {
+      const onEl   = document.getElementById(prefix + '_tire_on');
+      const baseKey = '_maint_base_' + prefix;
+      if (onEl.checked) {
+        // snapshot current maint as base
+        window[baseKey] = +inputs[prefix + '_maint'].value;
+      } else {
+        // restore base value
+        if (window[baseKey] !== undefined) {
+          inputs[prefix + '_maint'].value = window[baseKey];
+          document.getElementById(prefix + '_maint_out').textContent = fmt(window[baseKey]);
+        }
+      }
+      updateTire(prefix);
+      update();
+    });
+
+    ['tire_price', 'tire_km'].forEach(field => {
+      document.getElementById(prefix + '_' + field).addEventListener('input', () => {
+        updateTire(prefix);
+        update();
+      });
+    });
+  });
+
+  ids.forEach(id => inputs[id].addEventListener('input', update));
+  ['ev_free_ins','ev_free_maint','ice_free_ins','ice_free_maint'].forEach(id => {
+    document.getElementById(id).addEventListener('change', update);
+  });
+
+  // Sync ราคารถ slider ↔ number input
+  const evPriceRange  = document.getElementById('ev_price_range');
+  const icePriceRange = document.getElementById('ice_price_range');
+
+  evPriceRange.addEventListener('input', () => {
+    inputs.ev_price.value = evPriceRange.value;
+    update();
+  });
+  icePriceRange.addEventListener('input', () => {
+    inputs.ice_price.value = icePriceRange.value;
+    update();
+  });
+  inputs.ev_price.addEventListener('input', () => {
+    const v = Math.max(0, +inputs.ev_price.value || 0);
+    evPriceRange.value = Math.min(v, +evPriceRange.max);
+    update();
+  });
+  inputs.ice_price.addEventListener('input', () => {
+    const v = Math.max(0, +inputs.ice_price.value || 0);
+    icePriceRange.value = Math.min(v, +icePriceRange.max);
+    update();
+  });
+
+  // Mini share chart
+  let shareChart = null;
+  function drawShareChart(v, sellYear, maxYears, breakEvenYear) {
+    const ctx = document.getElementById('shareChart');
+    if (!ctx) return;
+    const labels = [], evData = [], iceData = [];
+    for (let y = 0; y <= maxYears; y++) {
+      labels.push(y);
+      evData.push(totalCost(v, true, y));
+      iceData.push(totalCost(v, false, y));
+    }
+    const beAnno = breakEvenYear && breakEvenYear > 0 && breakEvenYear < maxYears ? breakEvenYear : null;
+    const bePlugin = {
+      id: 'shareBePlugin',
+      afterDatasetsDraw(chart) {
+        const be = chart.options.plugins.beAnno;
+        if (!be) return;
+        const { ctx: c, chartArea: { top, bottom }, scales: { x } } = chart;
+        const xp = x.getPixelForValue(be);
+        c.save();
+        c.setLineDash([4,3]); c.strokeStyle='rgba(255,255,255,0.3)'; c.lineWidth=1;
+        c.beginPath(); c.moveTo(xp,top); c.lineTo(xp,bottom); c.stroke();
+        c.setLineDash([]);
+        c.fillStyle='#9ba0a8'; c.font='9px sans-serif'; c.textAlign='center';
+        c.fillText('คุ้มทุน ' + be.toFixed(1) + ' ปี', xp, top+9);
+        c.restore();
+      }
+    };
+    if (shareChart) {
+      shareChart.data.labels = labels;
+      shareChart.data.datasets[0].data = evData;
+      shareChart.data.datasets[1].data = iceData;
+      shareChart.options.plugins.beAnno = beAnno;
+      shareChart.update('none');
+    } else {
+      shareChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label:'EV',  data:evData,  borderColor:'#4a9eff', backgroundColor:'rgba(74,158,255,0.15)', fill:true, tension:0, pointRadius:0, borderWidth:2 },
+            { label:'ICE', data:iceData, borderColor:'#ff8c5e', backgroundColor:'rgba(255,140,94,0.10)',  fill:true, tension:0, pointRadius:0, borderWidth:2, borderDash:[5,3] }
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          plugins: {
+            legend:{ display:false },
+            beAnno,
+            tooltip:{ enabled:false }
+          },
+          scales: {
+            x:{ ticks:{ color:'#6b7079', font:{size:9} }, grid:{ color:'rgba(255,255,255,0.05)' } },
+            y:{ ticks:{ color:'#6b7079', font:{size:9}, callback: v => fmtK(v) }, grid:{ color:'rgba(255,255,255,0.05)' } }
+          }
+        },
+        plugins: [bePlugin]
+      });
+    }
+  }
+
+  // Model name inputs → update share card live
+  ['ev_name','ice_name'].forEach(id => {
+    document.getElementById(id).addEventListener('input', update);
+  });
+
+  // URL encode/decode state
+  function encodeState() {
+    const v = getVals();
+    const p = new URLSearchParams({
+      m:  mode,
+      ep: v.evPrice,  ee: v.evEff,  ek: v.evKwh,
+      ei: v.evIns,    em: v.evMaint, ed: Math.round(v.evDep*100),
+      ep2:v.evPct,    eb: v.evBaht,
+      ip: v.icePrice, ie: v.iceEff,  if2:v.iceFuel,
+      ii: v.iceIns,   im: v.iceMaint,id2:Math.round(v.iceDep*100),
+      ip2:v.icePct,   ib: v.iceBaht,
+      km: v.kmYear,   yr: v.years,   vy: v.viewYears,
+      en: encodeURIComponent(document.getElementById('ev_name').value  || ''),
+      in2:encodeURIComponent(document.getElementById('ice_name').value || ''),
+    });
+    return p.toString();
+  }
+
+  function loadFromURL() {
+    const p = new URLSearchParams(window.location.search || window.location.hash.replace('#',''));
+    if (!p.has('ep')) return;
+    const setV = (id, val) => { if (inputs[id]) inputs[id].value = val; };
+    const m2 = p.get('m') || 'dep';
+    mode = m2;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === m2));
+    document.querySelectorAll('.dep-input').forEach(el => el.style.display = m2==='dep'?'':'none');
+    document.querySelectorAll('.pct-input').forEach(el => el.style.display = m2==='pct'?'':'none');
+    document.querySelectorAll('.baht-input').forEach(el => el.style.display = m2==='baht'?'':'none');
+    setV('ev_price',  p.get('ep'));  setV('ev_eff',   p.get('ee'));
+    setV('ev_kwh',    p.get('ek'));  setV('ev_ins',   p.get('ei'));
+    setV('ev_maint',  p.get('em'));  setV('ev_dep',   p.get('ed'));
+    setV('ev_pct',    p.get('ep2'));  setV('ev_baht', p.get('eb'));
+    setV('ice_price', p.get('ip'));  setV('ice_eff',  p.get('ie'));
+    setV('ice_fuel',  p.get('if2')); setV('ice_ins',  p.get('ii'));
+    setV('ice_maint', p.get('im'));  setV('ice_dep',  p.get('id2'));
+    setV('ice_pct',   p.get('ip2')); setV('ice_baht', p.get('ib'));
+    setV('km_year',   p.get('km'));  setV('years',    p.get('yr'));
+    setV('view_years',p.get('vy'));
+    // sync price range sliders
+    if (p.get('ep')) { document.getElementById('ev_price_range').value  = Math.min(+p.get('ep'),3000000); }
+    if (p.get('ip')) { document.getElementById('ice_price_range').value = Math.min(+p.get('ip'),3000000); }
+    // names
+    if (p.get('en'))  document.getElementById('ev_name').value  = decodeURIComponent(p.get('en'));
+    if (p.get('in2')) document.getElementById('ice_name').value = decodeURIComponent(p.get('in2'));
+  }
+
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', update);
+  // Init tire display (checkbox off by default → dim inputs)
+  ['ev','ice'].forEach(p => updateTire(p));
+  loadFromURL();
+  update();
+})();
+
+// Global functions for share buttons
+function copyLink() {
+  const btn = document.getElementById('btn_copy_link');
+  // Build URL with current state encoded as hash (works with file://)
+  const base = window.location.href.split('?')[0].split('#')[0];
+  // Trigger encode via IIFE scope — use a workaround via hidden input
+  const dummy = document.createElement('input');
+  document.body.appendChild(dummy);
+  // Re-encode inline
+  const ids2 = ['ev_price','ev_eff','ev_kwh','ev_ins','ev_maint','ev_dep','ev_pct','ev_baht',
+                 'ice_price','ice_eff','ice_fuel','ice_ins','ice_maint','ice_dep','ice_pct','ice_baht',
+                 'km_year','years','view_years'];
+  const vals = {};
+  ids2.forEach(id => { const el = document.getElementById(id); if(el) vals[id] = el.value; });
+  const mode = document.querySelector('.mode-btn.active')?.dataset.mode || 'dep';
+  const p = new URLSearchParams({
+    m: mode,
+    ep:vals.ev_price,  ee:vals.ev_eff,   ek:vals.ev_kwh,
+    ei:vals.ev_ins,    em:vals.ev_maint,  ed:vals.ev_dep,
+    ep2:vals.ev_pct,   eb:vals.ev_baht,
+    ip:vals.ice_price, ie:vals.ice_eff,   if2:vals.ice_fuel,
+    ii:vals.ice_ins,   im:vals.ice_maint, id2:vals.ice_dep,
+    ip2:vals.ice_pct,  ib:vals.ice_baht,
+    km:vals.km_year,   yr:vals.years,     vy:vals.view_years,
+    en:encodeURIComponent(document.getElementById('ev_name').value  || ''),
+    in2:encodeURIComponent(document.getElementById('ice_name').value || ''),
+  });
+  document.body.removeChild(dummy);
+  const url = base + '?' + p.toString();
+  navigator.clipboard.writeText(url).then(() => {
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => { btn.textContent = '🔗 Copy Link'; }, 2000);
+  }).catch(() => {
+    prompt('Copy this link:', url);
+  });
+}
+
+function toggleShareCard() {
+  const card = document.getElementById('share_card');
+  const btn  = document.getElementById('btn_screenshot');
+  const showing = card.style.display !== 'none';
+  card.style.display = showing ? 'none' : 'block';
+  btn.textContent = showing ? '📸 Share Card' : '✕ ปิด Card';
+  if (!showing) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // trigger chart draw now that canvas is visible
+    const ids2 = ['ev_price','ev_eff','ev_kwh','ev_ins','ev_maint','ev_dep','ev_pct','ev_baht',
+                   'ice_price','ice_eff','ice_fuel','ice_ins','ice_maint','ice_dep','ice_pct','ice_baht',
+                   'km_year','years','view_years'];
+    const vals = {}; ids2.forEach(id => { const el = document.getElementById(id); if(el) vals[id] = el.value; });
+    const km = +vals.km_year || 15000;
+    const vy = +vals.view_years || 10;
+    const sy = +vals.years || 5;
+    // just call update to repopulate everything including chart
+    document.getElementById('km_year').dispatchEvent(new Event('input'));
+  }
+}
+</script>
+</body>
+</html>
