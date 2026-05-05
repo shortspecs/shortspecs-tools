@@ -753,7 +753,7 @@ input[type="range"]::-moz-range-thumb {
 .share-result.ev-wins  { background: rgba(74,158,255,0.15); color: #79b8ff; }
 .share-result.ice-wins { background: rgba(255,140,94,0.12);  color: #ffa07a; }
 .share-details {
-  display: flex; gap: 16px; flex-wrap: wrap;
+  display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
   font-size: 12px; color: #9ba0a8; margin-bottom: 14px;
 }
 .share-details strong { color: #ebedf0; }
@@ -1180,6 +1180,13 @@ input[type="range"]::-moz-range-thumb {
           <span id="share_winner_text">—</span>
         </div>
 
+        <!-- Stats row -->
+        <div class="share-details">
+          <span>วิ่ง <strong id="share_km">—</strong> กม./ปี</span>
+          <span>ใช้รถ <strong id="share_years">—</strong> ปี</span>
+          <span>EV คุ้มทุน <strong id="share_be">—</strong></span>
+        </div>
+
         <!-- Cost breakdown -->
         <div class="share-breakdown">
           <div class="share-breakdown-row share-breakdown-header">
@@ -1229,14 +1236,7 @@ input[type="range"]::-moz-range-thumb {
           <canvas id="shareChart"></canvas>
         </div>
 
-        <!-- Stats row -->
-        <div class="share-details">
-          <span>📍 คุ้มทุน <strong id="share_be">—</strong></span>
-          <span>🛣️ <strong id="share_km">—</strong> กม./ปี</span>
-          <span>📅 ถือ <strong id="share_years">—</strong> ปี</span>
-        </div>
-
-        <div class="share-card-footer">shortspecs.com · คำนวณด้วยตัวเองได้ที่ลิงก์ใน bio</div>
+        <div class="share-card-footer">* ผลลัพธ์เป็นการประมาณการเบื้องต้นเพื่อประกอบการตัดสินใจเท่านั้น ปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจซื้อ *<br>· ©2026 shortspecs.com · All rights reserved ·</div>
       </div>
     </div>
 
@@ -1263,8 +1263,12 @@ input[type="range"]::-moz-range-thumb {
 </div>
 
 <footer class="footer">
-  Built for Short Specs · ค่าทั้งหมดเป็นค่าประมาณการ ผู้ใช้ควรตรวจสอบราคาจริงกับผู้จำหน่าย<br>
-  คำนวณทุกอย่างใน browser ของคุณ ไม่มีการส่งข้อมูลออกไปไหน
+  <div style="font-size:10px; color:rgba(128,128,128,0.6); margin-bottom:6px; text-align:center;">
+    * ผลลัพธ์เป็นการประมาณการเบื้องต้นเพื่อประกอบการตัดสินใจเท่านั้น ผู้ใช้ควรศึกษาข้อมูลเพิ่มเติมและปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจซื้อ *
+  </div>
+  <div style="font-size:12px; color:rgba(128,128,128,0.8); text-align:center;">
+    ©2026 ShortSpecs · All rights reserved
+  </div>
 </footer>
 
 </div>
@@ -1740,19 +1744,40 @@ input[type="range"]::-moz-range-thumb {
   function drawShareChart(v, sellYear, maxYears, breakEvenYear) {
     const ctx = document.getElementById('shareChart');
     if (!ctx) return;
-    const labels = [], evData = [], iceData = [];
+    const labels = [], evSolid = [], iceSolid = [], evDashed = [], iceDashed = [];
     for (let y = 0; y <= maxYears; y++) {
       labels.push(y);
-      evData.push(totalCost(v, true, y));
-      iceData.push(totalCost(v, false, y));
+      const evC = totalCost(v, true, y);
+      const iceC = totalCost(v, false, y);
+      if (y <= sellYear) {
+        evSolid.push(evC);   iceSolid.push(iceC);
+        evDashed.push(null); iceDashed.push(null);
+      } else {
+        evSolid.push(null);  iceSolid.push(null);
+        evDashed.push(evC);  iceDashed.push(iceC);
+      }
+      if (y === sellYear) { evDashed[y] = evC; iceDashed[y] = iceC; }
     }
     const beAnno = breakEvenYear && breakEvenYear > 0 && breakEvenYear < maxYears ? breakEvenYear : null;
     const bePlugin = {
       id: 'shareBePlugin',
       afterDatasetsDraw(chart) {
-        const be = chart.options.plugins.beAnno;
-        if (!be) return;
         const { ctx: c, chartArea: { top, bottom }, scales: { x } } = chart;
+        const be = chart.options.plugins.beAnno;
+        const sy = chart.options.plugins.sellYear;
+        const mx = chart.options.plugins.maxYears;
+        // Sell year vertical line
+        if (sy && sy > 0 && sy < mx) {
+          const xSell = x.getPixelForValue(sy);
+          c.save();
+          c.strokeStyle = 'rgba(255,255,255,0.25)'; c.lineWidth = 1;
+          c.beginPath(); c.moveTo(xSell, top); c.lineTo(xSell, bottom); c.stroke();
+          c.fillStyle = '#6b7079'; c.font = '9px sans-serif'; c.textAlign = 'center';
+          c.fillText('ปีที่ขาย ' + sy, xSell, bottom + 12);
+          c.restore();
+        }
+        // Break-even vertical line
+        if (!be) return;
         const xp = x.getPixelForValue(be);
         c.save();
         c.setLineDash([4,3]); c.strokeStyle='rgba(255,255,255,0.3)'; c.lineWidth=1;
@@ -1765,9 +1790,13 @@ input[type="range"]::-moz-range-thumb {
     };
     if (shareChart) {
       shareChart.data.labels = labels;
-      shareChart.data.datasets[0].data = evData;
-      shareChart.data.datasets[1].data = iceData;
+      shareChart.data.datasets[0].data = evSolid;
+      shareChart.data.datasets[1].data = iceSolid;
+      shareChart.data.datasets[2].data = evDashed;
+      shareChart.data.datasets[3].data = iceDashed;
       shareChart.options.plugins.beAnno = beAnno;
+      shareChart.options.plugins.sellYear = sellYear;
+      shareChart.options.plugins.maxYears = maxYears;
       shareChart.update('none');
     } else {
       shareChart = new Chart(ctx, {
@@ -1775,15 +1804,17 @@ input[type="range"]::-moz-range-thumb {
         data: {
           labels,
           datasets: [
-            { label:'EV',  data:evData,  borderColor:'#4a9eff', backgroundColor:'rgba(74,158,255,0.15)', fill:true, tension:0, pointRadius:0, borderWidth:2 },
-            { label:'ICE', data:iceData, borderColor:'#ff8c5e', backgroundColor:'rgba(255,140,94,0.10)',  fill:true, tension:0, pointRadius:0, borderWidth:2, borderDash:[5,3] }
+            { label:'EV',  data:evSolid,  borderColor:'#4a9eff', backgroundColor:'rgba(74,158,255,0.15)', fill:true,  tension:0, pointRadius:0, borderWidth:2, spanGaps:false },
+            { label:'ICE', data:iceSolid, borderColor:'#ff8c5e', backgroundColor:'rgba(255,140,94,0.10)',  fill:true,  tension:0, pointRadius:0, borderWidth:2, spanGaps:false },
+            { label:'EV',  data:evDashed, borderColor:'#4a9eff', backgroundColor:'transparent', fill:false, tension:0, pointRadius:0, borderWidth:1.5, borderDash:[5,3], spanGaps:false },
+            { label:'ICE', data:iceDashed,borderColor:'#ff8c5e', backgroundColor:'transparent', fill:false, tension:0, pointRadius:0, borderWidth:1.5, borderDash:[5,3], spanGaps:false }
           ]
         },
         options: {
           responsive:true, maintainAspectRatio:false,
           plugins: {
             legend:{ display:false },
-            beAnno,
+            beAnno, sellYear, maxYears,
             tooltip:{ enabled:false }
           },
           scales: {
