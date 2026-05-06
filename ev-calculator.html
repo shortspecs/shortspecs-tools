@@ -19,6 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 :root {
   --bg: #ffffff;
@@ -706,6 +707,14 @@ input[type="range"]::-moz-range-thumb {
 .share-btn:hover { color: var(--text); border-color: var(--text-dim); }
 .share-btn-accent { background: var(--ev); color: #fff; border-color: var(--ev); font-weight: 600; }
 .share-btn-accent:hover { opacity: 0.88; color: #fff; }
+.share-btn-fb { background: #1877f2; color: #fff !important; border-color: #1877f2; font-weight: 600; }
+.share-btn-fb:hover { opacity: 0.88; }
+.share-btn-x { background: #111; color: #fff !important; border-color: #444; font-weight: 600; }
+.share-btn-x:hover { opacity: 0.88; }
+.consent-notice {
+  text-align: center; font-size: 10px; color: rgba(128,128,128,0.38);
+  padding: 10px 16px 2px; line-height: 1.5;
+}
 
 /* Share card */
 .share-card { border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-md); }
@@ -765,9 +774,9 @@ input[type="range"]::-moz-range-thumb {
 }
 .share-breakdown-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  font-size: 11.5px;
-  padding: 6px 12px;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  font-size: 11px;
+  padding: 6px 10px;
   color: #9ba0a8;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
@@ -775,6 +784,7 @@ input[type="range"]::-moz-range-thumb {
 .share-breakdown-row span:first-child { color: #6b7079; }
 .share-breakdown-row span:nth-child(2) { text-align: right; color: #c0d8ff; font-variant-numeric: tabular-nums; }
 .share-breakdown-row span:nth-child(3) { text-align: right; color: #ffd4c0; font-variant-numeric: tabular-nums; }
+.share-breakdown-row span:nth-child(4) { text-align: right; font-variant-numeric: tabular-nums; }
 .share-breakdown-header {
   background: rgba(255,255,255,0.04);
   font-weight: 600;
@@ -787,7 +797,7 @@ input[type="range"]::-moz-range-thumb {
 .share-breakdown-total {
   background: rgba(255,255,255,0.06);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
 }
 .share-breakdown-total span:nth-child(2) { color: #4a9eff; }
 .share-breakdown-total span:nth-child(3) { color: #ff8c5e; }
@@ -1193,41 +1203,49 @@ input[type="range"]::-moz-range-thumb {
             <span></span>
             <span style="color:#4a9eff;" id="share_ev_name2">EV</span>
             <span style="color:#ff8c5e;" id="share_ice_name2">ICE</span>
+            <span style="color:#a0a6b0;">ส่วนต่าง</span>
           </div>
           <div class="share-breakdown-row">
             <span>ราคารถ</span>
             <span id="sb_ev_price">—</span>
             <span id="sb_ice_price">—</span>
+            <span id="sb_diff_price">—</span>
           </div>
           <div class="share-breakdown-row">
             <span>ราคาขาย (−)</span>
             <span id="sb_ev_sell">—</span>
             <span id="sb_ice_sell">—</span>
+            <span id="sb_diff_sell">—</span>
           </div>
           <div class="share-breakdown-row share-breakdown-sub">
             <span>ค่าเสื่อม (สุทธิ)</span>
             <span id="sb_ev_dep">—</span>
             <span id="sb_ice_dep">—</span>
+            <span id="sb_diff_dep">—</span>
           </div>
           <div class="share-breakdown-row">
             <span>ค่าพลังงาน</span>
             <span id="sb_ev_energy">—</span>
             <span id="sb_ice_energy">—</span>
+            <span id="sb_diff_energy">—</span>
           </div>
           <div class="share-breakdown-row">
             <span>ประกัน</span>
             <span id="sb_ev_ins">—</span>
             <span id="sb_ice_ins">—</span>
+            <span id="sb_diff_ins">—</span>
           </div>
           <div class="share-breakdown-row">
             <span>บำรุงรักษา</span>
             <span id="sb_ev_maint">—</span>
             <span id="sb_ice_maint">—</span>
+            <span id="sb_diff_maint">—</span>
           </div>
           <div class="share-breakdown-row share-breakdown-total">
             <span>รวม</span>
             <span id="sb_ev_total">—</span>
             <span id="sb_ice_total">—</span>
+            <span id="sb_diff_total">—</span>
           </div>
         </div>
 
@@ -1238,6 +1256,13 @@ input[type="range"]::-moz-range-thumb {
 
         <div class="share-card-footer">* ผลลัพธ์เป็นการประมาณการเบื้องต้นเพื่อประกอบการตัดสินใจเท่านั้น ปรึกษาผู้เชี่ยวชาญก่อนตัดสินใจซื้อ *<br>· ©2026 shortspecs.com · All rights reserved ·</div>
       </div>
+    </div>
+
+    <!-- Social share / save actions (shown when share card is open) -->
+    <div id="share_actions" class="share-row" style="display:none; margin-top:8px;">
+      <button type="button" class="share-btn" onclick="saveShareImage(this)">💾 บันทึกภาพ</button>
+      <button type="button" class="share-btn share-btn-fb" onclick="shareFacebook()">📘 Facebook</button>
+      <button type="button" class="share-btn share-btn-x" onclick="shareX()">𝕏 X / Twitter</button>
     </div>
 
     <div class="chart-section">
@@ -1262,6 +1287,8 @@ input[type="range"]::-moz-range-thumb {
 
 </div>
 
+<div class="consent-notice">การใช้เครื่องมือนี้ถือว่ายินยอมให้เก็บข้อมูลการคำนวณแบบไม่ระบุตัวตน</div>
+
 <footer class="footer">
   <div style="font-size:10px; color:rgba(128,128,128,0.6); margin-bottom:6px; text-align:center;">
     <br><br>
@@ -1275,6 +1302,9 @@ input[type="range"]::-moz-range-thumb {
 </div>
 
 <script>
+const SHEET_LOG_URL = 'https://script.google.com/macros/s/AKfycbzIL7QLA8XIc2G8CUQqfwGTN-QXw5n04MM0iy--CwXJFaTfAi-BQT8Pm5-Cb0SfHKNM/exec';
+let _lastCalc = null;
+
 (function() {
   const fmt = n => Math.round(n).toLocaleString('en-US');
   const fmtK = n => {
@@ -1524,6 +1554,12 @@ input[type="range"]::-moz-range-thumb {
     const iceEPy  = (v.kmYear / v.iceEff) * v.iceFuel;
 
     const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    const setDiff = (id, diff) => {
+      const el = document.getElementById(id); if (!el) return;
+      const sign = diff > 0 ? '+' : '−';
+      el.textContent = sign + fmtK(Math.abs(diff)) + ' บ.';
+      el.style.color = diff > 0 ? '#4dbd74' : '#e05555';
+    };
     set('sb_ev_price',  fmtK(v.evPrice)  + ' บ.');
     set('sb_ice_price', fmtK(v.icePrice) + ' บ.');
     set('sb_ev_sell',   '−' + fmtK(evSell)  + ' บ.');
@@ -1538,6 +1574,14 @@ input[type="range"]::-moz-range-thumb {
     set('sb_ice_maint', fmtK(v.iceMaint * sellYear) + ' บ.');
     set('sb_ev_total',  fmtK(evAt)  + ' บ.');
     set('sb_ice_total', fmtK(iceAt) + ' บ.');
+    setDiff('sb_diff_price',  v.icePrice - v.evPrice);
+    setDiff('sb_diff_sell',   evSell - iceSell);
+    setDiff('sb_diff_dep',    iceDep - evDep);
+    setDiff('sb_diff_energy', Math.round(iceEPy * sellYear) - Math.round(evEPy * sellYear));
+    setDiff('sb_diff_ins',    v.iceIns * sellYear - v.evIns * sellYear);
+    setDiff('sb_diff_maint',  v.iceMaint * sellYear - v.evMaint * sellYear);
+    setDiff('sb_diff_total',  iceAt - evAt);
+    _lastCalc = { v, sellYear, breakEvenYear, evAt, iceAt };
 
     // Mini chart — only draw/update when share card is visible
     if (document.getElementById('share_card').style.display !== 'none') {
@@ -1887,14 +1931,8 @@ input[type="range"]::-moz-range-thumb {
 })();
 
 // Global functions for share buttons
-function copyLink() {
-  const btn = document.getElementById('btn_copy_link');
-  // Build URL with current state encoded as hash (works with file://)
+function buildShareUrl() {
   const base = window.location.href.split('?')[0].split('#')[0];
-  // Trigger encode via IIFE scope — use a workaround via hidden input
-  const dummy = document.createElement('input');
-  document.body.appendChild(dummy);
-  // Re-encode inline
   const ids2 = ['ev_price','ev_eff','ev_kwh','ev_ins','ev_maint','ev_dep','ev_pct','ev_baht',
                  'ice_price','ice_eff','ice_fuel','ice_ins','ice_maint','ice_dep','ice_pct','ice_baht',
                  'km_year','years','view_years'];
@@ -1913,8 +1951,12 @@ function copyLink() {
     en:encodeURIComponent(document.getElementById('ev_name').value  || ''),
     in2:encodeURIComponent(document.getElementById('ice_name').value || ''),
   });
-  document.body.removeChild(dummy);
-  const url = base + '?' + p.toString();
+  return base + '?' + p.toString();
+}
+
+function copyLink() {
+  const btn = document.getElementById('btn_copy_link');
+  const url = buildShareUrl();
   navigator.clipboard.writeText(url).then(() => {
     btn.textContent = '✅ Copied!';
     setTimeout(() => { btn.textContent = '🔗 Copy Link'; }, 2000);
@@ -1924,24 +1966,67 @@ function copyLink() {
 }
 
 function toggleShareCard() {
-  const card = document.getElementById('share_card');
-  const btn  = document.getElementById('btn_screenshot');
+  const card    = document.getElementById('share_card');
+  const btn     = document.getElementById('btn_screenshot');
+  const actions = document.getElementById('share_actions');
   const showing = card.style.display !== 'none';
   card.style.display = showing ? 'none' : 'block';
+  if (actions) actions.style.display = showing ? 'none' : 'flex';
   btn.textContent = showing ? '📸 Share Card' : '✕ ปิด Card';
   if (!showing) {
     card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    // trigger chart draw now that canvas is visible
-    const ids2 = ['ev_price','ev_eff','ev_kwh','ev_ins','ev_maint','ev_dep','ev_pct','ev_baht',
-                   'ice_price','ice_eff','ice_fuel','ice_ins','ice_maint','ice_dep','ice_pct','ice_baht',
-                   'km_year','years','view_years'];
-    const vals = {}; ids2.forEach(id => { const el = document.getElementById(id); if(el) vals[id] = el.value; });
-    const km = +vals.km_year || 15000;
-    const vy = +vals.view_years || 10;
-    const sy = +vals.years || 5;
-    // just call update to repopulate everything including chart
     document.getElementById('km_year').dispatchEvent(new Event('input'));
+    logCalculation(_lastCalc);
   }
+}
+
+async function saveShareImage(btn) {
+  const inner = document.querySelector('.share-card-inner');
+  if (!inner || typeof html2canvas === 'undefined') return;
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังบันทึก...';
+  try {
+    const canvas = await html2canvas(inner, { backgroundColor: '#1a1d23', scale: 2, useCORS: true, logging: false });
+    const a = document.createElement('a');
+    a.download = 'ev-vs-ice-shortspecs.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    btn.textContent = '✅ บันทึกแล้ว!';
+    setTimeout(() => { btn.disabled = false; btn.textContent = '💾 บันทึกภาพ'; }, 2500);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '💾 บันทึกภาพ';
+  }
+}
+
+function shareFacebook() {
+  const url = encodeURIComponent(buildShareUrl());
+  window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank', 'width=626,height=436');
+}
+
+function shareX() {
+  const evName  = document.getElementById('ev_name')?.value  || 'EV';
+  const iceName = document.getElementById('ice_name')?.value || 'ICE';
+  const url  = encodeURIComponent(buildShareUrl());
+  const text = encodeURIComponent('เปรียบเทียบต้นทุน ' + evName + ' vs ' + iceName + ' คุ้มไหม? คำนวณด้วย ShortSpecs');
+  window.open('https://twitter.com/intent/tweet?url=' + url + '&text=' + text, '_blank', 'width=600,height=400');
+}
+
+function logCalculation(calc) {
+  if (!SHEET_LOG_URL || !calc) return;
+  const { v, sellYear, breakEvenYear, evAt, iceAt } = calc;
+  const params = new URLSearchParams({
+    timestamp:  new Date().toISOString(),
+    ev_name:    document.getElementById('ev_name')?.value  || '',
+    ice_name:   document.getElementById('ice_name')?.value || '',
+    km_year:    v.kmYear,
+    sell_year:  sellYear,
+    break_even: breakEvenYear ? breakEvenYear.toFixed(2) : '',
+    ev_total:   Math.round(evAt),
+    ice_total:  Math.round(iceAt),
+    diff:       Math.round(iceAt - evAt),
+  });
+  try { fetch(SHEET_LOG_URL + '?' + params.toString(), { mode: 'no-cors' }); } catch(e) {}
 }
 </script>
 </body>
