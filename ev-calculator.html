@@ -2004,6 +2004,7 @@ async function saveShareImage(btn) {
     a.download = 'ev-vs-ice-shortspecs.png';
     a.href = canvas.toDataURL('image/png');
     a.click();
+    logCalculation(_lastCalc);
     btn.textContent = '✅ บันทึกแล้ว!';
     setTimeout(() => { btn.disabled = false; btn.textContent = '💾 บันทึกภาพ'; }, 2500);
   } catch(e) {
