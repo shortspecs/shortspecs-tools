@@ -1315,7 +1315,7 @@ input[type="range"]::-moz-range-thumb {
 </div>
 
 <script>
-const SHEET_LOG_URL = 'https://script.google.com/macros/s/AKfycbzKQk6p2PU-0pUuVZtI_v69JqwfhGtyEeT61PyUXbpySwwgTcgFqxycZ7h4RJlvj0EUUQ/exec';
+const SHEET_LOG_URL = 'https://script.google.com/macros/s/AKfycbx68c2uO_sPgRc9QKgRO2Z-5T5GcJo7YdJS26XyDR-b2xJq3BVh-UBFytWhM17XL9Z2/exec';
 let _lastCalc = null;
 
 (function() {
@@ -2028,16 +2028,26 @@ function shareX() {
 function logCalculation(calc) {
   if (!SHEET_LOG_URL || !calc) return;
   const { v, sellYear, breakEvenYear, evAt, iceAt } = calc;
+  const evEPy  = Math.round((v.kmYear * v.evEff  / 100) * v.evKwh);
+  const iceEPy = Math.round((v.kmYear / v.iceEff) * v.iceFuel);
   const params = new URLSearchParams({
-    timestamp:  new Date().toISOString(),
-    ev_name:    document.getElementById('ev_name')?.value  || '',
-    ice_name:   document.getElementById('ice_name')?.value || '',
-    km_year:    v.kmYear,
-    sell_year:  sellYear,
-    break_even: breakEvenYear ? breakEvenYear.toFixed(2) : '',
-    ev_total:   Math.round(evAt),
-    ice_total:  Math.round(iceAt),
-    diff:       Math.round(iceAt - evAt),
+    timestamp:    new Date().toISOString(),
+    ev_name:      document.getElementById('ev_name')?.value  || '',
+    ice_name:     document.getElementById('ice_name')?.value || '',
+    km_year:      v.kmYear,
+    sell_year:    sellYear,
+    break_even:   breakEvenYear ? breakEvenYear.toFixed(2) : '',
+    ev_price:     Math.round(v.evPrice),
+    ice_price:    Math.round(v.icePrice),
+    ev_energy_py: evEPy,
+    ice_energy_py: iceEPy,
+    ev_ins_py:    Math.round(v.evIns),
+    ice_ins_py:   Math.round(v.iceIns),
+    ev_maint_py:  Math.round(v.evMaint),
+    ice_maint_py: Math.round(v.iceMaint),
+    ev_total:     Math.round(evAt),
+    ice_total:    Math.round(iceAt),
+    diff:         Math.round(iceAt - evAt),
   });
   try { fetch(SHEET_LOG_URL + '?' + params.toString(), { mode: 'no-cors' }); } catch(e) {}
 }
