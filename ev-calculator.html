@@ -2032,7 +2032,7 @@ function logCalculation(calc) {
   const evEPy  = Math.round((v.kmYear * v.evEff  / 100) * v.evKwh);
   const iceEPy = Math.round((v.kmYear / v.iceEff) * v.iceFuel);
   const params = new URLSearchParams({
-    timestamp:    new Date().toISOString(),
+    timestamp:    new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Bangkok' }),
     ev_name:      document.getElementById('ev_name')?.value  || '',
     ice_name:     document.getElementById('ice_name')?.value || '',
     km_year:      v.kmYear,
