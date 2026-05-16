@@ -911,18 +911,22 @@ input[type="range"]::-moz-range-thumb {
         <div class="field">
           <div class="field-label">
             <span class="field-name">ค่าไฟ บาท/kWh</span>
-            <span class="field-value" id="ev_kwh_out">4.00</span>
           </div>
-          <input type="range" id="ev_kwh" min="0" max="8" step="0.25" value="4">
+          <div class="price-field">
+            <input type="range" id="ev_kwh" min="0" max="8" step="0.25" value="4">
+            <input type="number" id="ev_kwh_num" value="4" step="any" min="0">
+          </div>
           <div class="field-hint">บ้าน TOU 2.6–3.5 · ปกติ 4–4.5 · DC 7–8</div>
         </div>
 
         <div class="field">
           <div class="field-label">
             <span class="field-name">ประกัน/ปี</span>
-            <span class="field-value" id="ev_ins_out">25,000</span>
           </div>
-          <input type="range" id="ev_ins" min="0" max="50000" step="500" value="25000">
+          <div class="price-field">
+            <input type="range" id="ev_ins" min="0" max="50000" step="500" value="25000">
+            <input type="number" id="ev_ins_num" value="25000" step="500" min="0" style="width:80px;">
+          </div>
           <div class="field-hint">800K–1.2M: 22–30K · 1.2M+: 30–45K</div>
           <label class="free-toggle"><input type="checkbox" id="ev_free_ins"><span>ฟรีประกันปีแรก</span></label>
         </div>
@@ -932,7 +936,10 @@ input[type="range"]::-moz-range-thumb {
             <span class="field-name">บำรุง/ปี</span>
             <span class="field-value" id="ev_maint_out">5,000</span>
           </div>
-          <input type="range" id="ev_maint" min="0" max="20000" step="500" value="5000">
+          <div class="price-field">
+            <input type="range" id="ev_maint" min="0" max="20000" step="500" value="5000">
+            <input type="number" id="ev_maint_num" value="5000" step="500" min="0" style="width:80px;">
+          </div>
           <div class="field-hint">รวมยางแล้ว: ตรวจ+เบรก+อื่นๆ</div>
           <label class="free-toggle"><input type="checkbox" id="ev_free_maint"><span>ฟรีบำรุงรักษาปีแรก</span></label>
 
@@ -1019,18 +1026,22 @@ input[type="range"]::-moz-range-thumb {
         <div class="field">
           <div class="field-label">
             <span class="field-name">ราคาน้ำมัน บาท/ลิตร</span>
-            <span class="field-value" id="ice_fuel_out">38.0</span>
           </div>
-          <input type="range" id="ice_fuel" min="0" max="50" step="0.5" value="38">
+          <div class="price-field">
+            <input type="range" id="ice_fuel" min="0" max="50" step="0.5" value="38">
+            <input type="number" id="ice_fuel_num" value="38" step="any" min="0">
+          </div>
           <div class="field-hint">95: 38–42 · GH91: 35–38 · ดีเซล 32–36</div>
         </div>
 
         <div class="field">
           <div class="field-label">
             <span class="field-name">ประกัน/ปี</span>
-            <span class="field-value" id="ice_ins_out">16,000</span>
           </div>
-          <input type="range" id="ice_ins" min="0" max="40000" step="500" value="16000">
+          <div class="price-field">
+            <input type="range" id="ice_ins" min="0" max="40000" step="500" value="16000">
+            <input type="number" id="ice_ins_num" value="16000" step="500" min="0" style="width:80px;">
+          </div>
           <div class="field-hint">700K–1M: 16–20K · 1M+: 20–30K</div>
           <label class="free-toggle"><input type="checkbox" id="ice_free_ins"><span>ฟรีประกันปีแรก</span></label>
         </div>
@@ -1040,7 +1051,10 @@ input[type="range"]::-moz-range-thumb {
             <span class="field-name">บำรุง/ปี</span>
             <span class="field-value" id="ice_maint_out">12,000</span>
           </div>
-          <input type="range" id="ice_maint" min="0" max="40000" step="500" value="12000">
+          <div class="price-field">
+            <input type="range" id="ice_maint" min="0" max="40000" step="500" value="12000">
+            <input type="number" id="ice_maint_num" value="12000" step="500" min="0" style="width:80px;">
+          </div>
           <div class="field-hint">รวมยางแล้ว: ตรวจ+เบรก+อื่นๆ</div>
           <label class="free-toggle"><input type="checkbox" id="ice_free_maint"><span>ฟรีบำรุงรักษาปีแรก</span></label>
 
@@ -1349,14 +1363,23 @@ let _lastCalc = null;
     const iceP = +inputs.ice_price.value || 0;
     const evB = +inputs.ev_baht.value || 0;
     const iceB = +inputs.ice_baht.value || 0;
+    const numVal = (numId, sliderId) => {
+      const n = document.getElementById(numId);
+      if (n && n.value !== '') return Math.max(0, +n.value || 0);
+      return +inputs[sliderId].value;
+    };
     return {
-      evPrice: Math.max(0, evP), evEff: +inputs.ev_eff.value, evKwh: +inputs.ev_kwh.value,
-      evIns: +inputs.ev_ins.value, evMaint: +inputs.ev_maint.value,
+      evPrice: Math.max(0, evP), evEff: +inputs.ev_eff.value,
+      evKwh:   numVal('ev_kwh_num',    'ev_kwh'),
+      evIns:   numVal('ev_ins_num',    'ev_ins'),
+      evMaint: numVal('ev_maint_num',  'ev_maint'),
       evDep: +inputs.ev_dep.value / 100, evPct: +inputs.ev_pct.value / 100, evBaht: Math.max(0, evB),
       evFreeIns: document.getElementById('ev_free_ins').checked,
       evFreeMaint: document.getElementById('ev_free_maint').checked,
-      icePrice: Math.max(0, iceP), iceEff: +inputs.ice_eff.value, iceFuel: +inputs.ice_fuel.value,
-      iceIns: +inputs.ice_ins.value, iceMaint: +inputs.ice_maint.value,
+      icePrice: Math.max(0, iceP), iceEff: +inputs.ice_eff.value,
+      iceFuel:  numVal('ice_fuel_num',  'ice_fuel'),
+      iceIns:   numVal('ice_ins_num',   'ice_ins'),
+      iceMaint: numVal('ice_maint_num', 'ice_maint'),
       iceDep: +inputs.ice_dep.value / 100, icePct: +inputs.ice_pct.value / 100, iceBaht: Math.max(0, iceB),
       iceFreeIns: document.getElementById('ice_free_ins').checked,
       iceFreeMaint: document.getElementById('ice_free_maint').checked,
@@ -1447,15 +1470,20 @@ let _lastCalc = null;
     });
 
     document.getElementById('ev_eff_out').textContent = v.evEff;
-    document.getElementById('ev_kwh_out').textContent = v.evKwh.toFixed(2);
-    document.getElementById('ev_ins_out').textContent = fmt(v.evIns);
-    document.getElementById('ev_maint_out').textContent = fmt(v.evMaint);
+    // sync number inputs (แทน _out spans ที่ถูกลบออก)
+    const setNum = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && document.activeElement !== el) el.value = val;
+    };
+    setNum('ev_kwh_num',    v.evKwh.toFixed(2));
+    setNum('ev_ins_num',    Math.round(v.evIns));
+    setNum('ev_maint_num',  Math.round(v.evMaint));
+    setNum('ice_fuel_num',  v.iceFuel.toFixed(1));
+    setNum('ice_ins_num',   Math.round(v.iceIns));
+    setNum('ice_maint_num', Math.round(v.iceMaint));
     document.getElementById('ev_dep_out').textContent = (v.evDep * 100).toFixed(0) + '%';
     document.getElementById('ev_pct_out').textContent = (v.evPct * 100).toFixed(0) + '%';
     document.getElementById('ice_eff_out').textContent = v.iceEff.toFixed(1);
-    document.getElementById('ice_fuel_out').textContent = v.iceFuel.toFixed(1);
-    document.getElementById('ice_ins_out').textContent = fmt(v.iceIns);
-    document.getElementById('ice_maint_out').textContent = fmt(v.iceMaint);
     document.getElementById('ice_dep_out').textContent = (v.iceDep * 100).toFixed(0) + '%';
     document.getElementById('ice_pct_out').textContent = (v.icePct * 100).toFixed(0) + '%';
     document.getElementById('km_year_out').textContent = fmt(v.kmYear);
@@ -1796,7 +1824,35 @@ let _lastCalc = null;
     update();
   });
 
-  // Mini share chart
+  // Sync slider ↔ number input สำหรับ ค่าไฟ, ประกัน, บำรุง (EV+ICE)
+  // number input = source of truth, slider = visual only
+  const sliderNumPairs = [
+    { slider: 'ev_kwh',    num: 'ev_kwh_num'  },
+    { slider: 'ev_ins',    num: 'ev_ins_num'  },
+    { slider: 'ev_maint',  num: 'ev_maint_num'},
+    { slider: 'ice_fuel',  num: 'ice_fuel_num'},
+    { slider: 'ice_ins',   num: 'ice_ins_num' },
+    { slider: 'ice_maint', num: 'ice_maint_num'},
+  ];
+  sliderNumPairs.forEach(({ slider, num }) => {
+    const sliderEl = document.getElementById(slider);
+    const numEl    = document.getElementById(num);
+    if (!sliderEl || !numEl) return;
+    // slider moves → sync to number + update
+    sliderEl.addEventListener('input', () => {
+      numEl.value = sliderEl.value;
+      update();
+    });
+    // number typed → sync to slider on blur/change, not on every keystroke
+    numEl.addEventListener('change', () => {
+      const val = Math.max(0, +numEl.value || 0);
+      sliderEl.value = Math.min(val, +sliderEl.max);
+      update();
+    });
+    numEl.addEventListener('input', () => {
+      update();
+    });
+  });
   let shareChart = null;
   function drawShareChart(v, sellYear, maxYears, breakEvenYear) {
     const ctx = document.getElementById('shareChart');
