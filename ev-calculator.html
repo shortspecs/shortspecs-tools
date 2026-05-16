@@ -874,8 +874,7 @@ input[type="range"]::-moz-range-thumb {
     <div class="section">
       <div class="section-title no-dot">โหมดคำนวณราคาขาย</div>
       <div class="mode-buttons">
-        <button type="button" class="mode-btn active" data-mode="dep">Depreciation %/ปี</button>
-        <button type="button" class="mode-btn" data-mode="pct">% ของราคาต้น</button>
+        <button type="button" class="mode-btn active" data-mode="pct">% ของราคาต้น</button>
         <button type="button" class="mode-btn" data-mode="baht">ราคาขาย (บาท)</button>
       </div>
     </div>
@@ -886,7 +885,7 @@ input[type="range"]::-moz-range-thumb {
       <div class="car-card ev-card">
         <div class="section-title ev">รถ EV</div>
         <div class="field" style="margin-bottom:10px;">
-          <input type="text" id="ev_name" placeholder="ชื่อรุ่น เช่น BYD Atto 3" class="model-name-input ev-name-input">
+          <input type="text" id="ev_name" placeholder="ชื่อรุ่น เช่น BYD Atto 3" class="model-name-input ev-name-input" list="ev_models" autocomplete="off">
         </div>
 
         <div class="field">
@@ -994,7 +993,7 @@ input[type="range"]::-moz-range-thumb {
       <div class="car-card ice-card">
         <div class="section-title ice">รถน้ำมัน</div>
         <div class="field" style="margin-bottom:10px;">
-          <input type="text" id="ice_name" placeholder="ชื่อรุ่น เช่น Honda City" class="model-name-input ice-name-input">
+          <input type="text" id="ice_name" placeholder="ชื่อรุ่น เช่น Honda City" class="model-name-input ice-name-input" list="ice_models" autocomplete="off">
         </div>
 
         <div class="field">
@@ -1326,7 +1325,7 @@ let _lastCalc = null;
     return Math.round(n).toString();
   };
 
-  let mode = 'dep';
+  let mode = 'pct';
   const ids = ['ev_price','ev_eff','ev_kwh','ev_ins','ev_maint','ev_dep','ev_pct','ev_baht','ice_price','ice_eff','ice_fuel','ice_ins','ice_maint','ice_dep','ice_pct','ice_baht','km_year','years','view_years'];
   const inputs = {};
   ids.forEach(id => inputs[id] = document.getElementById(id));
@@ -1938,6 +1937,10 @@ let _lastCalc = null;
 
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', update);
   // Init tire display (checkbox off by default → dim inputs)
+  // Init: default mode = pct, hide dep-input
+  document.querySelectorAll('.dep-input').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.pct-input').forEach(el => el.style.display = '');
+  document.querySelectorAll('.baht-input').forEach(el => el.style.display = 'none');
   ['ev','ice'].forEach(p => updateTire(p));
   loadFromURL();
   update();
@@ -2053,5 +2056,99 @@ function logCalculation(calc) {
   try { fetch(SHEET_LOG_URL + '?' + params.toString(), { mode: 'no-cors' }); } catch(e) {}
 }
 </script>
+<datalist id="ev_models">
+  <option value="BYD Atto 3">
+  <option value="BYD Atto 3 Extended Range">
+  <option value="BYD Seal">
+  <option value="BYD Seal U">
+  <option value="BYD Dolphin">
+  <option value="BYD Dolphin Mini">
+  <option value="BYD Sealion 6">
+  <option value="BYD Sealion 7">
+  <option value="BYD Shark">
+  <option value="BYD Han">
+  <option value="BYD Tang">
+  <option value="Tesla Model 3">
+  <option value="Tesla Model 3 Long Range">
+  <option value="Tesla Model Y">
+  <option value="Tesla Model Y Long Range">
+  <option value="MG4 Electric">
+  <option value="MG ZS EV">
+  <option value="MG Cyberster">
+  <option value="Neta V">
+  <option value="Neta X">
+  <option value="Neta GT">
+  <option value="ORA Good Cat">
+  <option value="ORA 07">
+  <option value="AION Y Plus">
+  <option value="AION V">
+  <option value="AION S">
+  <option value="AION UT">
+  <option value="Volvo EX30">
+  <option value="Volvo EX40">
+  <option value="Volvo EC40">
+  <option value="BMW iX1">
+  <option value="BMW i4">
+  <option value="BMW iX3">
+  <option value="Mercedes-Benz EQB">
+  <option value="Mercedes-Benz EQA">
+  <option value="Hyundai IONIQ 5">
+  <option value="Hyundai IONIQ 6">
+  <option value="Kia EV6">
+  <option value="Kia EV9">
+  <option value="Zeekr X">
+  <option value="Zeekr 001">
+  <option value="Zeekr 7X">
+  <option value="Chery Omoda E5">
+  <option value="Deepal S07">
+  <option value="Deepal L07">
+  <option value="Xpeng G6">
+  <option value="Xpeng X9">
+</datalist>
+
+<datalist id="ice_models">
+  <option value="Honda City 1.0 Turbo">
+  <option value="Honda City e:HEV">
+  <option value="Honda Civic e:HEV">
+  <option value="Honda HR-V e:HEV">
+  <option value="Honda CR-V e:HEV">
+  <option value="Honda Accord e:HEV">
+  <option value="Toyota Yaris">
+  <option value="Toyota Yaris Cross">
+  <option value="Toyota Yaris Cross HEV">
+  <option value="Toyota Corolla Cross">
+  <option value="Toyota Corolla Cross HEV">
+  <option value="Toyota Camry HEV">
+  <option value="Toyota C-HR HEV">
+  <option value="Toyota Fortuner">
+  <option value="Toyota Hilux Revo">
+  <option value="Toyota Alphard HEV">
+  <option value="Toyota Vellfire HEV">
+  <option value="Toyota RAV4 HEV">
+  <option value="Mazda2">
+  <option value="Mazda3">
+  <option value="Mazda CX-3">
+  <option value="Mazda CX-5">
+  <option value="Mazda CX-60 PHEV">
+  <option value="Mazda CX-80 PHEV">
+  <option value="Mitsubishi Xpander">
+  <option value="Mitsubishi Outlander PHEV">
+  <option value="Mitsubishi Eclipse Cross PHEV">
+  <option value="Nissan Almera">
+  <option value="Nissan Kicks e-POWER">
+  <option value="Nissan Note e-POWER">
+  <option value="Isuzu D-Max">
+  <option value="Ford Ranger">
+  <option value="Ford Everest">
+  <option value="MG ZS">
+  <option value="MG HS">
+  <option value="Suzuki Swift">
+  <option value="Suzuki Celerio">
+  <option value="Subaru Forester">
+  <option value="Volvo XC40">
+  <option value="BMW 320i">
+  <option value="Mercedes-Benz C200">
+</datalist>
+
 </body>
 </html>
