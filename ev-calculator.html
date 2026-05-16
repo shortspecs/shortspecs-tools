@@ -1533,8 +1533,8 @@ let _lastCalc = null;
     const iceAt = totalCost(v, false, sellYear);
     const diff = iceAt - evAt;
 
-    document.getElementById('ev_total').textContent = fmtK(evAt) + ' บ.';
-    document.getElementById('ice_total').textContent = fmtK(iceAt) + ' บ.';
+    document.getElementById('ev_total').textContent = fmt(Math.round(evAt)) + ' บ.';
+    document.getElementById('ice_total').textContent = fmt(Math.round(iceAt)) + ' บ.';
 
     const verdictEl = document.getElementById('verdict');
     const vText = document.getElementById('verdict_text');
@@ -1543,12 +1543,12 @@ let _lastCalc = null;
     verdictEl.classList.remove('ev-wins', 'ice-wins');
     if (diff > 0) {
       verdictEl.classList.add('ev-wins');
-      vText.textContent = 'EV คุ้มกว่า ' + fmtK(diff) + ' บาท';
+      vText.textContent = 'EV คุ้มกว่า ' + fmt(Math.round(diff)) + ' บาท';
       vSub.textContent = 'ที่ ' + sellYear + ' ปี · วิ่ง ' + fmt(v.kmYear) + ' กม./ปี';
       vIcon.textContent = 'EV';
     } else if (diff < 0) {
       verdictEl.classList.add('ice-wins');
-      vText.textContent = 'น้ำมันคุ้มกว่า ' + fmtK(-diff) + ' บาท';
+      vText.textContent = 'น้ำมันคุ้มกว่า ' + fmt(Math.round(-diff)) + ' บาท';
       vSub.textContent = 'ที่ ' + sellYear + ' ปี · วิ่ง ' + fmt(v.kmYear) + ' กม./ปี';
       vIcon.textContent = 'ICE';
     } else {
@@ -1561,8 +1561,8 @@ let _lastCalc = null;
     const iceName = document.getElementById('ice_name').value || 'ICE';
     document.getElementById('share_ev_name').textContent  = evName;
     document.getElementById('share_ice_name').textContent = iceName;
-    document.getElementById('share_ev_cost').textContent  = fmtK(evAt) + ' บ.';
-    document.getElementById('share_ice_cost').textContent = fmtK(iceAt) + ' บ.';
+    document.getElementById('share_ev_cost').textContent  = fmt(Math.round(evAt)) + ' บ.';
+    document.getElementById('share_ice_cost').textContent = fmt(Math.round(iceAt)) + ' บ.';
     document.getElementById('share_km').textContent    = fmt(v.kmYear);
     document.getElementById('share_years').textContent = sellYear;
     const beEl2 = document.getElementById('share_be');
@@ -1572,10 +1572,10 @@ let _lastCalc = null;
     resultBar.classList.remove('ev-wins','ice-wins');
     if (diff > 0) {
       resultBar.classList.add('ev-wins');
-      winnerEl.textContent = '✅ EV คุ้มกว่า ' + fmtK(diff) + ' บาท ใน ' + sellYear + ' ปี';
+      winnerEl.textContent = '✅ EV คุ้มกว่า ' + fmt(Math.round(diff)) + ' บาท ใน ' + sellYear + ' ปี';
     } else if (diff < 0) {
       resultBar.classList.add('ice-wins');
-      winnerEl.textContent = '⛽ น้ำมันคุ้มกว่า ' + fmtK(-diff) + ' บาท ใน ' + sellYear + ' ปี';
+      winnerEl.textContent = '⛽ น้ำมันคุ้มกว่า ' + fmt(Math.round(-diff)) + ' บาท ใน ' + sellYear + ' ปี';
     } else {
       winnerEl.textContent = '= เสมอกัน';
     }
@@ -1612,8 +1612,8 @@ let _lastCalc = null;
     set('sb_ice_ins',   fmtK(v.iceIns * sellYear) + ' บ.');
     set('sb_ev_maint',  fmtK(v.evMaint  * sellYear) + ' บ.');
     set('sb_ice_maint', fmtK(v.iceMaint * sellYear) + ' บ.');
-    set('sb_ev_total',  fmtK(evAt)  + ' บ.');
-    set('sb_ice_total', fmtK(iceAt) + ' บ.');
+    set('sb_ev_total',  fmt(Math.round(evAt))  + ' บ.');
+    set('sb_ice_total', fmt(Math.round(iceAt)) + ' บ.');
     setDiff('sb_diff_price',  v.icePrice - v.evPrice);
     setDiff('sb_diff_sell',   evSell - iceSell);
     setDiff('sb_diff_dep',    iceDep - evDep);
